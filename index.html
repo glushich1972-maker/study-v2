@@ -1,3 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Учебный помощник</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+    html, body {
+        min-height: 100%;
+    }
+
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                     Roboto, Arial, sans-serif;
+    }
+
+    .material-card {
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .material-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    #viewer img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    #viewer table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    #viewer th,
+    #viewer td {
+        border: 1px solid #cbd5e1;
+        padding: .5rem;
+        text-align: left;
+    }
+
+    #viewer pre {
+        overflow-x: auto;
+        padding: 1rem;
+        border-radius: .5rem;
+        background: #f1f5f9;
+    }
+
+    .dark #viewer pre {
+        background: #1e293b;
+    }
+
+    .dark #viewer th,
+    .dark #viewer td {
+        border-color: #475569;
+    }
+
+    .dark body {
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+
+    .dark .panel {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    .dark select,
+    .dark input,
+    .dark textarea {
+        background: #0f172a;
+        color: #e2e8f0;
+        border-color: #475569;
+    }
+
+    .dark .secondary {
+        background: #334155;
+        color: #e2e8f0;
+    }
+
+    .spinner {
+        width: 22px;
+        height: 22px;
+        border: 3px solid #cbd5e1;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: spin .8s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    iframe.viewer-frame {
+        width: 100%;
+        height: 75vh;
+        border: 0;
+    }
+</style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+<div class="max-w-6xl mx-auto px-4 py-4">
+
+    <!-- Шапка -->
+    <header class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+        <div class="flex items-center justify-between gap-3">
+
+            <div>
+                <h1 class="text-2xl font-bold">
+                    📚 Учебный помощник
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">
+                    Учебные материалы, лекции и контрольные вопросы
+                </p>
+            </div>
+
+            <div class="flex gap-2">
+                <button
+                    id="themeButton"
+                    onclick="toggleTheme()"
+                    class="secondary bg-slate-100 px-3 py-2 rounded-xl"
+                    title="Сменить тему">
+                    🌙
+                </button>
+
+                <button
+                    onclick="openAdmin()"
+                    class="bg-slate-800 text-white px-3 py-2 rounded-xl">
+                    ⚙️
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- Выбор курса -->
+    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+        <div class="grid md:grid-cols-3 gap-3">
+
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Семестр
+                </label>
+
+                <select id="semesterSelect"
+                        class="w-full border border-slate-300 rounded-xl p-3"
+                        onchange="semesterChanged()">
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Предмет
+                </label>
+
+                <select id="subjectSelect"
+                        class="w-full border border-slate-300 rounded-xl p-3"
+                        onchange="subjectChanged()">
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">
+                    Тема
+                </label>
+
+                <select id="topicSelect"
+                        class="w-full border border-slate-300 rounded-xl p-3"
+                        onchange="topicChanged()">
+                </select>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Материалы -->
+    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <h2 class="text-xl font-bold">
+                📖 Материалы
+            </h2>
+
+            <button
+                onclick="refreshMaterials()"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
+                ↻ Обновить
+            </button>
+        </div>
+
+        <div id="materialsList"
+             class="grid md:grid-cols-3 gap-3">
+        </div>
+
+    </section>
+
+
+    <!-- Просмотр -->
+    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-bold">
+                👁 Просмотр
+            </h2>
+
+            <button
+                onclick="toggleFullscreen()"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
+                ⛶ На весь экран
+            </button>
+        </div>
+
+        <div id="viewer"
+             class="prose max-w-none min-h-[300px]">
+            <div class="text-slate-500">
+                Выберите тему и материал.
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- Контрольные вопросы -->
+    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+        <h2 class="text-xl font-bold mb-3">
+            ❓ Контрольные вопросы
+        </h2>
+
+        <div id="questionsList"></div>
+
+    </section>
+
+
+    <!-- Админ-панель -->
+    <section id="adminPanel"
+             class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+
+        <div class="max-w-2xl mx-auto px-4 py-8">
+
+            <div class="panel bg-white rounded-2xl shadow-xl p-5">
+
+                <div class="flex justify-between items-center mb-5">
+                    <div>
+                        <h2 class="text-2xl font-bold">
+                            ⚙️ Управление материалами
+                        </h2>
+
+                        <p class="text-sm text-slate-500 mt-1">
+                            Загрузка файлов непосредственно в GitHub
+                        </p>
+                    </div>
+
+                    <button
+                        onclick="closeAdmin()"
+                        class="text-2xl">
+                        ×
+                    </button>
+                </div>
+
+
+                <!-- Авторизация -->
+                <div id="loginBlock">
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-900">
+                        <strong>Важно.</strong>
+                        Для загрузки файлов нужен GitHub Fine-grained token
+                        с доступом к этому репозиторию и правом
+                        <strong>Contents: Read and write</strong>.
+                        Токен сохраняется в браузере.
+                    </div>
+
+                    <label class="block text-sm font-medium mb-1">
+                        GitHub-токен
+                    </label>
+
+                    <input
+                        id="githubToken"
+                        type="password"
+                        autocomplete="off"
+                        placeholder="github_pat_..."
+                        class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+
+                    <button
+                        onclick="loginGitHub()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-3 font-medium">
+                        Войти
+                    </button>
+
+                    <div id="loginStatus"
+                         class="mt-3 text-sm">
+                    </div>
+
+                </div>
+
+
+                <!-- Панель управления -->
+                <div id="adminContent" class="hidden">
+
+                    <div class="flex justify-between items-center mb-4">
+
+                        <div>
+                            <div class="font-medium">
+                                Администратор
+                            </div>
+
+                            <div id="githubUser"
+                                 class="text-sm text-slate-500">
+                            </div>
+                        </div>
+
+                        <button
+                            onclick="logoutGitHub()"
+                            class="text-sm text-red-600">
+                            Выйти
+                        </button>
+
+                    </div>
+
+
+                    <!-- Выбор темы -->
+                    <div class="grid gap-3 mb-4">
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">
+                                Предмет
+                            </label>
+
+                            <select id="adminSubject"
+                                    class="w-full border border-slate-300 rounded-xl p-3"
+                                    onchange="adminSubjectChanged()">
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-1">
+                                Тема
+                            </label>
+
+                            <select id="adminTopic"
+                                    class="w-full border border-slate-300 rounded-xl p-3">
+                            </select>
+                        </div>
+
+                    </div>
+
+
+                    <!-- Загрузка -->
+                    <div class="border border-slate-200 rounded-xl p-4 mb-4">
+
+                        <h3 class="font-bold mb-3">
+                            ➕ Добавить материал
+                        </h3>
+
+                        <label class="block text-sm font-medium mb-1">
+                            Название материала
+                        </label>
+
+                        <input
+                            id="uploadTitle"
+                            type="text"
+                            placeholder="Например: Лекция 1"
+                            class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+
+                        <label class="block text-sm font-medium mb-1">
+                            Файл
+                        </label>
+
+                        <input
+                            id="uploadFile"
+                            type="file"
+                            accept=".md,.markdown,.pdf,.docx"
+                            class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+
+                        <button
+                            onclick="uploadMaterial()"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl p-3 font-medium">
+                            ⬆️ Загрузить материал
+                        </button>
+
+                        <div id="uploadStatus"
+                             class="mt-3 text-sm">
+                        </div>
+
+                    </div>
+
+
+                    <!-- Список файлов -->
+                    <div>
+
+                        <h3 class="font-bold mb-3">
+                            📂 Файлы выбранной темы
+                        </h3>
+
+                        <div id="adminFiles">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Календарь -->
+    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+
+        <h2 class="text-xl font-bold mb-3">
+            📅 Календарь
+        </h2>
+
+        <input
+            id="studyDate"
+            type="date"
+            class="border border-slate-300 rounded-xl p-3">
+
+        <button
+            onclick="saveStudyDate()"
+            class="ml-2 bg-blue-600 text-white px-4 py-3 rounded-xl">
+            Сохранить
+        </button>
+
+        <div id="dateStatus"
+             class="text-sm text-slate-500 mt-2">
+        </div>
+
+    </section>
+
+</div>
+
+
 <script>
 
 /* =========================================================
@@ -1455,3 +1907,6 @@ function saveStudyDate() {
 }
 
 </script>
+
+</body>
+</html>
