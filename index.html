@@ -1,0 +1,1457 @@
+<script>
+
+/* =========================================================
+   НАСТРОЙКИ GITHUB
+   ========================================================= */
+
+const GITHUB_OWNER = "glushich1972-maker";
+const GITHUB_REPO = "study-v2";
+const GITHUB_BRANCH = "main";
+
+const GITHUB_API =
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
+
+const PAGES_BASE =
+    `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/`;
+
+
+/* =========================================================
+   ДАННЫЕ УЧЕБНИКА
+   ========================================================= */
+
+const STUDY_DATA = {
+
+    semester1: {
+        title: "1 семестр",
+
+        subjects: {
+
+            OK7: {
+                title: "ОК 7 — Правове регулювання надання психологічної допомоги",
+
+                topics: [
+
+                    {
+                        id: "topic1",
+                        title: "Тема 1. Загальні питання правового регулювання охорони здоров’я в Україні",
+                        path: "materials/OK7/topic1"
+                    },
+
+                    {
+                        id: "topic2",
+                        title: "Тема 2. Міжнародні та регіональні стандарти у сфері ментального здоров’я та психологічної діяльності",
+                        path: "materials/OK7/topic2"
+                    },
+
+                    {
+                        id: "topic3",
+                        title: "Тема 3. Правове регулювання діяльності психолога в системі освіти",
+                        path: "materials/OK7/topic3"
+                    },
+
+                    {
+                        id: "topic4",
+                        title: "Тема 4. Правове регулювання психологічної допомоги при захисті прав членів родини",
+                        path: "materials/OK7/topic4"
+                    },
+
+                    {
+                        id: "topic5",
+                        title: "Тема 5. Правове забезпечення діяльності психолога у розв’язанні проблем соціально уразливих категорій населення",
+                        path: "materials/OK7/topic5"
+                    },
+
+                    {
+                        id: "topic6",
+                        title: "Тема 6. Юридична відповідальність психолога за професійні правопорушення",
+                        path: "materials/OK7/topic6"
+                    }
+
+                ]
+            }
+
+        }
+    },
+
+    semester2: {
+        title: "2 семестр",
+        subjects: {}
+    }
+
+};
+
+
+/* =========================================================
+   КОНТРОЛЬНЫЕ ВОПРОСЫ
+   ========================================================= */
+
+const QUESTIONS = {
+
+    topic1: [
+        "Що таке право та які його основні ознаки?",
+        "Якою є структура правової норми?",
+        "Що таке медичне право?",
+        "Що таке фармацевтичне право?",
+        "Що таке біоетика та які проблеми вона охоплює?"
+    ],
+
+    topic2: [
+        "Які основні міжнародні документи формують систему прав людини?",
+        "Що таке Європейська конвенція з прав людини?",
+        "Яку роль відіграє ЄСПЛ?",
+        "Що таке Конвенція Ов’єдо?",
+        "Які етичні принципи є основними для психолога?"
+    ],
+
+    topic3: [
+        "Якими нормативними актами регулюється діяльність психолога в системі освіти?",
+        "Які основні обов’язки практичного психолога?",
+        "Які права має практичний психолог?",
+        "У яких випадках потрібна письмова згода батьків?",
+        "Що таке супервізія та інтервізія?"
+    ],
+
+    topic4: [
+        "Що таке домашнє насильство?",
+        "Які форми насильства виділяються законодавством?",
+        "Що таке дискримінація?",
+        "Яку допомогу може надавати психолог постраждалим?",
+        "Що таке безоплатна правнича допомога?"
+    ],
+
+    topic5: [
+        "Хто належить до соціально уразливих категорій населення?",
+        "Що таке складні життєві обставини?",
+        "Які принципи має враховувати психолог при роботі з постраждалими від війни?",
+        "Що таке соціальні послуги?",
+        "Що таке супервізія соціальних працівників?"
+    ],
+
+    topic6: [
+        "Які існують види юридичної відповідальності?",
+        "Що таке професійна відповідальність психолога?",
+        "Які умови законності психологічного експерименту?",
+        "Що передбачає відповідальність за доведення до самогубства?",
+        "Які наслідки може мати професійне правопорушення психолога?"
+    ]
+
+};
+
+
+/* =========================================================
+   СОСТОЯНИЕ
+   ========================================================= */
+
+let currentSemester = "semester1";
+let currentSubject = "OK7";
+let currentTopic = null;
+
+
+/* =========================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    loadTheme();
+
+    populateSemesters();
+
+    document.getElementById("studyDate").value =
+        localStorage.getItem("studyDate") || "";
+
+    semesterChanged();
+
+});
+
+
+/* =========================================================
+   НАВИГАЦИЯ
+   ========================================================= */
+
+function populateSemesters() {
+
+    const select =
+        document.getElementById("semesterSelect");
+
+    select.innerHTML = "";
+
+    Object.entries(STUDY_DATA).forEach(([id, semester]) => {
+
+        const option = document.createElement("option");
+
+        option.value = id;
+        option.textContent = semester.title;
+
+        select.appendChild(option);
+
+    });
+
+    select.value = currentSemester;
+}
+
+
+function semesterChanged() {
+
+    currentSemester =
+        document.getElementById("semesterSelect").value;
+
+    const semester =
+        STUDY_DATA[currentSemester];
+
+    const subjectSelect =
+        document.getElementById("subjectSelect");
+
+    subjectSelect.innerHTML = "";
+
+    Object.entries(semester.subjects).forEach(([id, subject]) => {
+
+        const option = document.createElement("option");
+
+        option.value = id;
+        option.textContent = subject.title;
+
+        subjectSelect.appendChild(option);
+
+    });
+
+    if (Object.keys(semester.subjects).length === 0) {
+
+        document.getElementById("topicSelect").innerHTML = "";
+
+        currentTopic = null;
+
+        document.getElementById("materialsList").innerHTML =
+            `<div class="text-slate-500">
+                Для этого семестра материалы пока не добавлены.
+             </div>`;
+
+        document.getElementById("questionsList").innerHTML = "";
+
+        return;
+    }
+
+    currentSubject =
+        Object.keys(semester.subjects)[0];
+
+    subjectSelect.value = currentSubject;
+
+    subjectChanged();
+}
+
+
+function subjectChanged() {
+
+    currentSubject =
+        document.getElementById("subjectSelect").value;
+
+    const subject =
+        STUDY_DATA[currentSemester].subjects[currentSubject];
+
+    const topicSelect =
+        document.getElementById("topicSelect");
+
+    topicSelect.innerHTML = "";
+
+    subject.topics.forEach(topic => {
+
+        const option = document.createElement("option");
+
+        option.value = topic.id;
+        option.textContent = topic.title;
+
+        topicSelect.appendChild(option);
+
+    });
+
+    if (subject.topics.length) {
+
+        currentTopic = subject.topics[0].id;
+
+        topicSelect.value = currentTopic;
+
+        topicChanged();
+
+    }
+}
+
+
+async function topicChanged() {
+
+    currentTopic =
+        document.getElementById("topicSelect").value;
+
+    await refreshMaterials();
+
+    showQuestions();
+}
+
+
+/* =========================================================
+   РАБОТА С МАТЕРИАЛАМИ
+   ========================================================= */
+
+function getCurrentTopic() {
+
+    const subject =
+        STUDY_DATA[currentSemester].subjects[currentSubject];
+
+    return subject.topics.find(t => t.id === currentTopic);
+}
+
+
+async function refreshMaterials() {
+
+    const container =
+        document.getElementById("materialsList");
+
+    if (!currentTopic) return;
+
+    container.innerHTML =
+        `<div class="text-slate-500">
+            <span class="spinner"></span>
+            Загрузка списка материалов...
+         </div>`;
+
+    const topic = getCurrentTopic();
+
+    try {
+
+        const response =
+            await fetch(
+                `${GITHUB_API}/${topic.path}`,
+                {
+                    headers: {
+                        "Accept": "application/vnd.github+json"
+                    }
+                }
+            );
+
+        if (!response.ok) {
+
+            if (response.status === 404) {
+
+                container.innerHTML =
+                    `<div class="text-slate-500">
+                        Материалы пока не загружены.
+                     </div>`;
+
+                return;
+            }
+
+            throw new Error(
+                "Ошибка GitHub API: " + response.status
+            );
+        }
+
+        const files = await response.json();
+
+        if (!Array.isArray(files) || !files.length) {
+
+            container.innerHTML =
+                `<div class="text-slate-500">
+                    Материалы пока не загружены.
+                 </div>`;
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        files
+            .filter(file => file.type === "file")
+            .forEach(file => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "material-card border border-slate-200 rounded-xl p-4";
+
+                const ext =
+                    getExtension(file.name);
+
+                let icon = "📄";
+
+                if (ext === "pdf") icon = "📕";
+                if (ext === "docx") icon = "📘";
+                if (ext === "md" || ext === "markdown")
+                    icon = "📝";
+
+                card.innerHTML = `
+
+                    <div class="text-2xl mb-2">
+                        ${icon}
+                    </div>
+
+                    <div class="font-medium break-words">
+                        ${escapeHtml(file.name)}
+                    </div>
+
+                    <div class="text-xs text-slate-500 mt-1 uppercase">
+                        ${ext}
+                    </div>
+
+                    <button
+                        class="mt-3 w-full bg-blue-600 text-white rounded-lg py-2">
+                        Открыть
+                    </button>
+                `;
+
+                card.querySelector("button")
+                    .addEventListener("click", () => {
+
+                        openMaterial(file);
+
+                    });
+
+                container.appendChild(card);
+
+            });
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            `<div class="text-red-600">
+                Не удалось загрузить список материалов.
+                <br>
+                <small>${escapeHtml(error.message)}</small>
+             </div>`;
+    }
+}
+
+
+/* =========================================================
+   ОТКРЫТИЕ МАТЕРИАЛА
+   ========================================================= */
+
+async function openMaterial(file) {
+
+    const viewer =
+        document.getElementById("viewer");
+
+    const ext =
+        getExtension(file.name);
+
+    const rawUrl =
+        `https://raw.githubusercontent.com/` +
+        `${GITHUB_OWNER}/${GITHUB_REPO}/` +
+        `${GITHUB_BRANCH}/${file.path}`;
+
+    if (ext === "md" || ext === "markdown") {
+
+        viewer.innerHTML =
+            `<div class="text-slate-500">
+                <span class="spinner"></span>
+                Загрузка текста...
+             </div>`;
+
+        try {
+
+            const response =
+                await fetch(rawUrl);
+
+            if (!response.ok)
+                throw new Error("Не удалось загрузить Markdown");
+
+            const text =
+                await response.text();
+
+            viewer.innerHTML =
+                marked.parse(text);
+
+            fixMarkdownImages(viewer, file.path);
+
+        } catch (error) {
+
+            viewer.innerHTML =
+                `<div class="text-red-600">
+                    Ошибка загрузки Markdown:
+                    ${escapeHtml(error.message)}
+                 </div>`;
+        }
+
+        return;
+    }
+
+
+    if (ext === "pdf") {
+
+        viewer.innerHTML = `
+            <iframe
+                class="viewer-frame"
+                src="${rawUrl}">
+            </iframe>
+
+            <div class="mt-3 text-center">
+                <a
+                    href="${rawUrl}"
+                    target="_blank"
+                    class="text-blue-600 underline">
+                    Открыть PDF отдельно
+                </a>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (ext === "docx") {
+
+        const encoded =
+            encodeURIComponent(rawUrl);
+
+        const officeUrl =
+            "https://view.officeapps.live.com/op/embed.aspx?src=" +
+            encoded;
+
+        viewer.innerHTML = `
+            <iframe
+                class="viewer-frame"
+                src="${officeUrl}">
+            </iframe>
+
+            <div class="mt-3 text-center">
+
+                <a
+                    href="${rawUrl}"
+                    target="_blank"
+                    class="text-blue-600 underline">
+                    Открыть или скачать DOCX
+                </a>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    viewer.innerHTML =
+        `<div class="text-red-600">
+            Этот тип файла пока не поддерживается.
+         </div>`;
+}
+
+
+/* =========================================================
+   MARKDOWN
+   ========================================================= */
+
+function fixMarkdownImages(container, filePath) {
+
+    const directory =
+        filePath.substring(
+            0,
+            filePath.lastIndexOf("/") + 1
+        );
+
+    container.querySelectorAll("img")
+        .forEach(img => {
+
+            const src = img.getAttribute("src");
+
+            if (!src) return;
+
+            if (
+                src.startsWith("http://") ||
+                src.startsWith("https://") ||
+                src.startsWith("/")
+            ) {
+                return;
+            }
+
+            const imagePath =
+                directory + src;
+
+            img.src =
+                `https://raw.githubusercontent.com/` +
+                `${GITHUB_OWNER}/${GITHUB_REPO}/` +
+                `${GITHUB_BRANCH}/${imagePath}`;
+        });
+}
+
+
+/* =========================================================
+   ВОПРОСЫ
+   ========================================================= */
+
+function showQuestions() {
+
+    const container =
+        document.getElementById("questionsList");
+
+    const questions =
+        QUESTIONS[currentTopic] || [];
+
+    if (!questions.length) {
+
+        container.innerHTML =
+            `<div class="text-slate-500">
+                Контрольные вопросы пока не добавлены.
+             </div>`;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    questions.forEach((question, index) => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "border-b border-slate-200 py-3";
+
+        item.innerHTML = `
+            <div class="font-medium">
+                ${index + 1}. ${escapeHtml(question)}
+            </div>
+        `;
+
+        container.appendChild(item);
+
+    });
+}
+
+
+/* =========================================================
+   АДМИНКА
+   ========================================================= */
+
+function openAdmin() {
+
+    document
+        .getElementById("adminPanel")
+        .classList.remove("hidden");
+
+    checkStoredToken();
+
+}
+
+
+function closeAdmin() {
+
+    document
+        .getElementById("adminPanel")
+        .classList.add("hidden");
+
+}
+
+
+function checkStoredToken() {
+
+    const token =
+        localStorage.getItem("githubToken");
+
+    if (token) {
+
+        document
+            .getElementById("loginBlock")
+            .classList.add("hidden");
+
+        document
+            .getElementById("adminContent")
+            .classList.remove("hidden");
+
+        populateAdminSubjects();
+
+        loadAdminFiles();
+
+    } else {
+
+        document
+            .getElementById("loginBlock")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("adminContent")
+            .classList.add("hidden");
+
+    }
+}
+
+
+async function loginGitHub() {
+
+    const input =
+        document.getElementById("githubToken");
+
+    const token =
+        input.value.trim();
+
+    const status =
+        document.getElementById("loginStatus");
+
+    if (!token) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Введите GitHub-токен.
+             </span>`;
+
+        return;
+    }
+
+    status.innerHTML =
+        `<span class="spinner"></span>
+         Проверяем доступ...`;
+
+    try {
+
+        const response =
+            await fetch(
+                `${GITHUB_API}`,
+                {
+                    headers: {
+                        "Accept":
+                            "application/vnd.github+json",
+
+                        "Authorization":
+                            `Bearer ${token}`,
+
+                        "X-GitHub-Api-Version":
+                            "2022-11-28"
+                    }
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "GitHub не принял токен."
+            );
+        }
+
+        localStorage.setItem(
+            "githubToken",
+            token
+        );
+
+        status.innerHTML =
+            `<span class="text-green-600">
+                Доступ получен.
+             </span>`;
+
+        document
+            .getElementById("loginBlock")
+            .classList.add("hidden");
+
+        document
+            .getElementById("adminContent")
+            .classList.remove("hidden");
+
+        populateAdminSubjects();
+
+        loadAdminFiles();
+
+    } catch (error) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                ${escapeHtml(error.message)}
+             </span>`;
+
+    }
+}
+
+
+function logoutGitHub() {
+
+    localStorage.removeItem("githubToken");
+
+    document
+        .getElementById("adminContent")
+        .classList.add("hidden");
+
+    document
+        .getElementById("loginBlock")
+        .classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   АДМИН — ВЫБОР ПРЕДМЕТА И ТЕМЫ
+   ========================================================= */
+
+function populateAdminSubjects() {
+
+    const select =
+        document.getElementById("adminSubject");
+
+    select.innerHTML = "";
+
+    const semester =
+        STUDY_DATA[currentSemester];
+
+    Object.entries(semester.subjects)
+        .forEach(([id, subject]) => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = id;
+            option.textContent = subject.title;
+
+            select.appendChild(option);
+
+        });
+
+    select.value = currentSubject;
+
+    adminSubjectChanged();
+}
+
+
+function adminSubjectChanged() {
+
+    const subjectId =
+        document.getElementById("adminSubject").value;
+
+    const subject =
+        STUDY_DATA[currentSemester]
+            .subjects[subjectId];
+
+    const select =
+        document.getElementById("adminTopic");
+
+    select.innerHTML = "";
+
+    subject.topics.forEach(topic => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = topic.id;
+        option.textContent = topic.title;
+
+        select.appendChild(option);
+
+    });
+
+    select.value = currentTopic;
+
+    loadAdminFiles();
+}
+
+
+/* =========================================================
+   АДМИН — СПИСОК ФАЙЛОВ
+   ========================================================= */
+
+async function loadAdminFiles() {
+
+    const container =
+        document.getElementById("adminFiles");
+
+    if (!container) return;
+
+    const topicId =
+        document.getElementById("adminTopic")?.value;
+
+    if (!topicId) return;
+
+    const subjectId =
+        document.getElementById("adminSubject").value;
+
+    const topic =
+        STUDY_DATA[currentSemester]
+            .subjects[subjectId]
+            .topics
+            .find(t => t.id === topicId);
+
+    if (!topic) return;
+
+    container.innerHTML =
+        `<div class="text-slate-500">
+            Загрузка...
+         </div>`;
+
+    try {
+
+        const token =
+            localStorage.getItem("githubToken");
+
+        const response =
+            await fetch(
+                `${GITHUB_API}/${topic.path}`,
+                {
+                    headers: githubHeaders(token)
+                }
+            );
+
+        if (response.status === 404) {
+
+            container.innerHTML =
+                `<div class="text-slate-500">
+                    Файлов пока нет.
+                 </div>`;
+
+            return;
+        }
+
+        if (!response.ok)
+            throw new Error(
+                "Не удалось получить список файлов."
+            );
+
+        const files =
+            await response.json();
+
+        container.innerHTML = "";
+
+        files
+            .filter(file => file.type === "file")
+            .forEach(file => {
+
+                const row =
+                    document.createElement("div");
+
+                row.className =
+                    "border border-slate-200 rounded-xl p-3 mb-2";
+
+                row.innerHTML = `
+
+                    <div class="flex items-center justify-between gap-3">
+
+                        <div class="min-w-0">
+                            <div class="font-medium break-words">
+                                ${escapeHtml(file.name)}
+                            </div>
+
+                            <div class="text-xs text-slate-500">
+                                ${formatBytes(file.size)}
+                            </div>
+                        </div>
+
+                        <button
+                            class="shrink-0 text-red-600 border border-red-200 px-3 py-2 rounded-lg">
+                            Удалить
+                        </button>
+
+                    </div>
+                `;
+
+                row.querySelector("button")
+                    .addEventListener(
+                        "click",
+                        () => deleteMaterial(file)
+                    );
+
+                container.appendChild(row);
+
+            });
+
+    } catch (error) {
+
+        container.innerHTML =
+            `<div class="text-red-600">
+                ${escapeHtml(error.message)}
+             </div>`;
+    }
+}
+
+
+/* =========================================================
+   ЗАГРУЗКА ФАЙЛА
+   ========================================================= */
+
+async function uploadMaterial() {
+
+    const status =
+        document.getElementById("uploadStatus");
+
+    const title =
+        document.getElementById("uploadTitle")
+            .value
+            .trim();
+
+    const fileInput =
+        document.getElementById("uploadFile");
+
+    const file =
+        fileInput.files[0];
+
+    const subjectId =
+        document.getElementById("adminSubject").value;
+
+    const topicId =
+        document.getElementById("adminTopic").value;
+
+    if (!file) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Выберите файл.
+             </span>`;
+
+        return;
+    }
+
+    if (file.size > 90 * 1024 * 1024) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Файл слишком большой. Максимум около 90 МБ.
+             </span>`;
+
+        return;
+    }
+
+    const allowed =
+        ["md", "markdown", "pdf", "docx"];
+
+    const extension =
+        getExtension(file.name);
+
+    if (!allowed.includes(extension)) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Разрешены только MD, PDF и DOCX.
+             </span>`;
+
+        return;
+    }
+
+    const topic =
+        STUDY_DATA[currentSemester]
+            .subjects[subjectId]
+            .topics
+            .find(t => t.id === topicId);
+
+    if (!topic) {
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Не удалось определить тему.
+             </span>`;
+
+        return;
+    }
+
+    status.innerHTML =
+        `<span class="spinner"></span>
+         Подготовка файла...`;
+
+    try {
+
+        const token =
+            localStorage.getItem("githubToken");
+
+        if (!token)
+            throw new Error(
+                "Сначала войдите в GitHub."
+            );
+
+
+        /*
+         * Название файла.
+         *
+         * Если пользователь указал название,
+         * сохраняем его, но расширение берём
+         * от исходного файла.
+         */
+
+        let filename =
+            title
+                ? sanitizeFilename(title) + "." + extension
+                : sanitizeFilename(file.name);
+
+
+        /*
+         * Читаем файл как Base64.
+         */
+
+        const base64 =
+            await fileToBase64(file);
+
+
+        const path =
+            `${topic.path}/${filename}`;
+
+
+        /*
+         * Проверяем, существует ли файл.
+         * Если существует — получаем его SHA,
+         * чтобы заменить существующий файл.
+         */
+
+        let existingSha = null;
+
+        const check =
+            await fetch(
+                `${GITHUB_API}/${path}`,
+                {
+                    headers:
+                        githubHeaders(token)
+                }
+            );
+
+        if (check.ok) {
+
+            const existing =
+                await check.json();
+
+            existingSha =
+                existing.sha;
+        }
+
+
+        status.innerHTML =
+            `<span class="spinner"></span>
+             Загружаем файл в GitHub...`;
+
+
+        const body = {
+
+            message:
+                `${existingSha ? "Обновление" : "Добавление"} материала: ${filename}`,
+
+            content: base64,
+
+            branch: GITHUB_BRANCH
+
+        };
+
+        if (existingSha) {
+            body.sha = existingSha;
+        }
+
+
+        const response =
+            await fetch(
+                `${GITHUB_API}/${path}`,
+                {
+                    method: "PUT",
+
+                    headers:
+                        githubHeaders(token),
+
+                    body:
+                        JSON.stringify(body)
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const error =
+                await response.json()
+                    .catch(() => ({}));
+
+            throw new Error(
+                error.message ||
+                "GitHub не принял файл."
+            );
+        }
+
+
+        status.innerHTML =
+            `<span class="text-green-600">
+                ✓ Материал успешно загружен.
+             </span>`;
+
+
+        document
+            .getElementById("uploadTitle")
+            .value = "";
+
+        fileInput.value = "";
+
+
+        await loadAdminFiles();
+
+        await refreshMaterials();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.innerHTML =
+            `<span class="text-red-600">
+                Ошибка: ${escapeHtml(error.message)}
+             </span>`;
+    }
+}
+
+
+/* =========================================================
+   УДАЛЕНИЕ
+   ========================================================= */
+
+async function deleteMaterial(file) {
+
+    const confirmed =
+        confirm(
+            `Удалить файл "${file.name}"?`
+        );
+
+    if (!confirmed) return;
+
+    try {
+
+        const token =
+            localStorage.getItem("githubToken");
+
+        if (!token)
+            throw new Error(
+                "Нет доступа к GitHub."
+            );
+
+        const response =
+            await fetch(
+                `${GITHUB_API}/${file.path}`,
+                {
+                    method: "DELETE",
+
+                    headers:
+                        githubHeaders(token),
+
+                    body:
+                        JSON.stringify({
+
+                            message:
+                                `Удаление материала: ${file.name}`,
+
+                            sha:
+                                file.sha,
+
+                            branch:
+                                GITHUB_BRANCH
+
+                        })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const error =
+                await response.json()
+                    .catch(() => ({}));
+
+            throw new Error(
+                error.message ||
+                "Не удалось удалить файл."
+            );
+        }
+
+
+        await loadAdminFiles();
+
+        await refreshMaterials();
+
+    } catch (error) {
+
+        alert(
+            "Ошибка удаления: " +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   GITHUB HELPERS
+   ========================================================= */
+
+function githubHeaders(token) {
+
+    return {
+
+        "Accept":
+            "application/vnd.github+json",
+
+        "Authorization":
+            `Bearer ${token}`,
+
+        "X-GitHub-Api-Version":
+            "2022-11-28",
+
+        "Content-Type":
+            "application/json"
+
+    };
+}
+
+
+function fileToBase64(file) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const reader =
+                new FileReader();
+
+            reader.onload = () => {
+
+                const result =
+                    reader.result;
+
+                /*
+                 * Убираем:
+                 * data:application/pdf;base64,
+                 */
+
+                const base64 =
+                    result
+                        .split(",")[1];
+
+                resolve(base64);
+            };
+
+            reader.onerror =
+                reject;
+
+            reader.readAsDataURL(file);
+        }
+    );
+}
+
+
+/* =========================================================
+   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+   ========================================================= */
+
+function getExtension(filename) {
+
+    return filename
+        .split(".")
+        .pop()
+        .toLowerCase();
+}
+
+
+function sanitizeFilename(name) {
+
+    return name
+        .replace(/[\\/:*?"<>|#%{}]/g, "_")
+        .replace(/\s+/g, "_")
+        .substring(0, 150);
+}
+
+
+function formatBytes(bytes) {
+
+    if (!bytes)
+        return "0 Б";
+
+    const units =
+        ["Б", "КБ", "МБ", "ГБ"];
+
+    let i = 0;
+    let value = bytes;
+
+    while (
+        value >= 1024 &&
+        i < units.length - 1
+    ) {
+
+        value /= 1024;
+        i++;
+    }
+
+    return value.toFixed(
+        value >= 10 || i === 0 ? 0 : 1
+    ) + " " + units[i];
+}
+
+
+function escapeHtml(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+/* =========================================================
+   ТЕМА
+   ========================================================= */
+
+function toggleTheme() {
+
+    const isDark =
+        document.documentElement
+            .classList.toggle("dark");
+
+    localStorage.setItem(
+        "darkMode",
+        isDark ? "1" : "0"
+    );
+
+    document.getElementById("themeButton")
+        .textContent =
+        isDark ? "☀️" : "🌙";
+}
+
+
+function loadTheme() {
+
+    const dark =
+        localStorage.getItem("darkMode");
+
+    if (dark === "1") {
+
+        document.documentElement
+            .classList.add("dark");
+
+        document.getElementById("themeButton")
+            .textContent = "☀️";
+    }
+}
+
+
+/* =========================================================
+   ПОЛНОЭКРАННЫЙ ПРОСМОТР
+   ========================================================= */
+
+function toggleFullscreen() {
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!document.fullscreenElement) {
+
+        viewer.requestFullscreen?.();
+
+    } else {
+
+        document.exitFullscreen?.();
+
+    }
+}
+
+
+/* =========================================================
+   КАЛЕНДАРЬ
+   ========================================================= */
+
+function saveStudyDate() {
+
+    const value =
+        document.getElementById("studyDate").value;
+
+    localStorage.setItem(
+        "studyDate",
+        value
+    );
+
+    document.getElementById("dateStatus")
+        .textContent =
+        value
+            ? "Дата сохранена."
+            : "Дата не выбрана.";
+}
+
+</script>
