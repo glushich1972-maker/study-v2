@@ -32,10 +32,6 @@
         display: none !important;
     }
 
-    /* =========================
-       ОБЛАСТЬ ЧТЕНИЯ
-       ========================= */
-
     #viewer {
         position: relative;
         min-height: 300px;
@@ -114,10 +110,6 @@
         overflow-wrap: anywhere;
     }
 
-    /* =========================
-       ПОЛНОЭКРАННЫЙ РЕЖИМ
-       ========================= */
-
     #viewer:fullscreen {
         width: 100vw;
         height: 100vh;
@@ -146,10 +138,6 @@
     #viewer:fullscreen #fullscreenButton {
         display: none;
     }
-
-    /* =========================
-       DARK MODE
-       ========================= */
 
     .dark #readerToolbar {
         border-color: #334155;
@@ -223,6 +211,18 @@
         font-size: .85rem;
         color: #64748b;
     }
+
+    .html-copy-button {
+        display: inline-block;
+        margin-bottom: 1rem;
+        background: #2563eb;
+        color: white;
+        border: 0;
+        border-radius: .5rem;
+        padding: .55rem .9rem;
+        cursor: pointer;
+        font-size: .9rem;
+    }
 </style>
 </head>
 
@@ -230,347 +230,314 @@
 
 <div class="max-w-6xl mx-auto px-4 py-4">
 
-    <!-- Шапка -->
-    <header class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-        <div class="flex items-center justify-between gap-3">
+<header class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+    <div class="flex items-center justify-between gap-3">
 
-            <div>
-                <h1 class="text-2xl font-bold">
-                    📚 Учебный помощник
-                </h1>
+        <div>
+            <h1 class="text-2xl font-bold">
+                📚 Учебный помощник
+            </h1>
 
-                <p class="text-sm text-slate-500 mt-1">
-                    Учебные материалы и лекции
-                </p>
-            </div>
-
-            <div class="flex gap-2">
-
-                <button
-                    id="themeButton"
-                    onclick="toggleTheme()"
-                    class="secondary bg-slate-100 px-3 py-2 rounded-xl"
-                    title="Сменить тему">
-                    🌙
-                </button>
-
-                <button
-                    onclick="openAdmin()"
-                    class="bg-slate-800 text-white px-3 py-2 rounded-xl">
-                    ⚙️
-                </button>
-
-            </div>
-        </div>
-    </header>
-
-
-    <!-- Выбор курса -->
-    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-        <div class="grid md:grid-cols-2 gap-3">
-
-            <div>
-                <label class="block text-sm font-medium mb-1">
-                    Семестр
-                </label>
-
-                <select
-                    id="semesterSelect"
-                    class="w-full border border-slate-300 rounded-xl p-3"
-                    onchange="semesterChanged()">
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-1">
-                    Предмет
-                </label>
-
-                <select
-                    id="subjectSelect"
-                    class="w-full border border-slate-300 rounded-xl p-3"
-                    onchange="subjectChanged()">
-                </select>
-            </div>
-
+            <p class="text-sm text-slate-500 mt-1">
+                Учебные материалы и лекции
+            </p>
         </div>
 
-    </section>
-
-
-    <!-- Материалы -->
-    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-        <div class="flex items-center justify-between gap-3 mb-3">
-
-            <h2 class="text-xl font-bold">
-                📖 Материалы
-            </h2>
+        <div class="flex gap-2">
 
             <button
-                onclick="refreshMaterials()"
-                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
-                ↻ Обновить
+                id="themeButton"
+                onclick="toggleTheme()"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl"
+                title="Сменить тему">
+                🌙
+            </button>
+
+            <button
+                onclick="openAdmin()"
+                class="bg-slate-800 text-white px-3 py-2 rounded-xl">
+                ⚙️
+            </button>
+
+        </div>
+    </div>
+</header>
+
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+    <div class="grid md:grid-cols-2 gap-3">
+
+        <div>
+            <label class="block text-sm font-medium mb-1">
+                Семестр
+            </label>
+
+            <select
+                id="semesterSelect"
+                class="w-full border border-slate-300 rounded-xl p-3"
+                onchange="semesterChanged()">
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">
+                Предмет
+            </label>
+
+            <select
+                id="subjectSelect"
+                class="w-full border border-slate-300 rounded-xl p-3"
+                onchange="subjectChanged()">
+            </select>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+    <div class="flex items-center justify-between gap-3 mb-3">
+
+        <h2 class="text-xl font-bold">
+            📖 Материалы
+        </h2>
+
+        <button
+            onclick="refreshMaterials()"
+            class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
+            ↻ Обновить
+        </button>
+
+    </div>
+
+    <div
+        id="materialsList"
+        class="grid md:grid-cols-3 gap-3">
+    </div>
+
+</section>
+
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+    <div class="flex items-center justify-between mb-3">
+
+        <h2 class="text-xl font-bold">
+            👁 Просмотр
+        </h2>
+
+        <button
+            id="fullscreenButton"
+            onclick="toggleFullscreen()"
+            class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
+            ⛶ На весь экран
+        </button>
+
+    </div>
+
+    <div id="viewer">
+
+        <div id="readerToolbar">
+
+            <button
+                onclick="changeFontSize(-1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
+                title="Уменьшить текст">
+                A−
+            </button>
+
+            <span
+                id="fontSizeLabel"
+                class="font-size-label">
+                100%
+            </span>
+
+            <button
+                onclick="changeFontSize(1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
+                title="Увеличить текст">
+                A+
             </button>
 
         </div>
 
-        <div
-            id="materialsList"
-            class="grid md:grid-cols-3 gap-3">
-        </div>
+        <div id="readerContent">
 
-    </section>
-
-
-    <!-- Просмотр -->
-    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-        <div class="flex items-center justify-between mb-3">
-
-            <h2 class="text-xl font-bold">
-                👁 Просмотр
-            </h2>
-
-            <button
-                id="fullscreenButton"
-                onclick="toggleFullscreen()"
-                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
-                ⛶ На весь экран
-            </button>
-
-        </div>
-
-
-        <div id="viewer">
-
-            <!-- Панель чтения -->
-            <div id="readerToolbar">
-
-                <button
-                    onclick="changeFontSize(-1)"
-                    class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
-                    title="Уменьшить текст">
-                    A−
-                </button>
-
-                <span
-                    id="fontSizeLabel"
-                    class="font-size-label">
-                    100%
-                </span>
-
-                <button
-                    onclick="changeFontSize(1)"
-                    class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
-                    title="Увеличить текст">
-                    A+
-                </button>
-
+            <div class="text-slate-500">
+                Выберите материал.
             </div>
 
+        </div>
 
-            <!-- Сам текст -->
-            <div id="readerContent">
+    </div>
 
-                <div class="text-slate-500">
-                    Выберите материал.
+</section>
+
+<section
+    id="adminPanel"
+    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        <div class="panel bg-white rounded-2xl shadow-xl p-5">
+
+            <div class="flex justify-between items-center mb-5">
+
+                <div>
+                    <h2 class="text-2xl font-bold">
+                        ⚙️ Управление материалами
+                    </h2>
+
+                    <p class="text-sm text-slate-500 mt-1">
+                        Загрузка файлов непосредственно в GitHub
+                    </p>
                 </div>
 
+                <button
+                    onclick="closeAdmin()"
+                    class="text-2xl">
+                    ×
+                </button>
+
             </div>
 
-        </div>
+            <div id="loginBlock">
 
-    </section>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-900">
 
+                    <strong>Важно.</strong>
 
-    <!-- Админ-панель -->
-    <section
-        id="adminPanel"
-        class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+                    Для загрузки файлов нужен GitHub Fine-grained token
+                    с доступом к этому репозиторию и правом
+                    <strong>Contents: Read and write</strong>.
 
-        <div class="max-w-2xl mx-auto px-4 py-8">
+                    Токен сохраняется в браузере.
 
-            <div class="panel bg-white rounded-2xl shadow-xl p-5">
+                </div>
 
-                <div class="flex justify-between items-center mb-5">
+                <label class="block text-sm font-medium mb-1">
+                    GitHub-токен
+                </label>
+
+                <input
+                    id="githubToken"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="github_pat_..."
+                    class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+
+                <button
+                    onclick="loginGitHub()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-3 font-medium">
+                    Войти
+                </button>
+
+                <div id="loginStatus" class="mt-3 text-sm"></div>
+
+            </div>
+
+            <div id="adminContent" class="hidden">
+
+                <div class="flex justify-between items-center mb-4">
 
                     <div>
-                        <h2 class="text-2xl font-bold">
-                            ⚙️ Управление материалами
-                        </h2>
 
-                        <p class="text-sm text-slate-500 mt-1">
-                            Загрузка файлов непосредственно в GitHub
-                        </p>
+                        <div class="font-medium">
+                            Администратор
+                        </div>
+
+                        <div
+                            id="githubUser"
+                            class="text-sm text-slate-500">
+                        </div>
+
                     </div>
 
                     <button
-                        onclick="closeAdmin()"
-                        class="text-2xl">
-                        ×
+                        onclick="logoutGitHub()"
+                        class="text-sm text-red-600">
+                        Выйти
                     </button>
 
                 </div>
 
+                <div class="grid gap-3 mb-4">
 
-                <!-- Авторизация -->
-                <div id="loginBlock">
+                    <div>
 
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-900">
+                        <label class="block text-sm font-medium mb-1">
+                            Предмет
+                        </label>
 
-                        <strong>Важно.</strong>
-
-                        Для загрузки файлов нужен GitHub Fine-grained token
-                        с доступом к этому репозиторию и правом
-                        <strong>Contents: Read and write</strong>.
-
-                        Токен сохраняется в браузере.
+                        <select
+                            id="adminSubject"
+                            class="w-full border border-slate-300 rounded-xl p-3"
+                            onchange="adminSubjectChanged()">
+                        </select>
 
                     </div>
 
+                    <div>
+
+                        <label class="block text-sm font-medium mb-1">
+                            Тема
+                        </label>
+
+                        <select
+                            id="adminTopic"
+                            class="w-full border border-slate-300 rounded-xl p-3">
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="border border-slate-200 rounded-xl p-4 mb-4">
+
+                    <h3 class="font-bold mb-3">
+                        ➕ Добавить материал
+                    </h3>
 
                     <label class="block text-sm font-medium mb-1">
-                        GitHub-токен
+                        Название материала
                     </label>
 
                     <input
-                        id="githubToken"
-                        type="password"
-                        autocomplete="off"
-                        placeholder="github_pat_..."
+                        id="uploadTitle"
+                        type="text"
+                        placeholder="Например: Лекция 1"
                         class="w-full border border-slate-300 rounded-xl p-3 mb-3">
 
+                    <label class="block text-sm font-medium mb-1">
+                        Файл
+                    </label>
+
+                    <input
+                        id="uploadFile"
+                        type="file"
+                        accept=".md,.markdown,.pdf,.docx,.html"
+                        class="w-full border border-slate-300 rounded-xl p-3 mb-3">
 
                     <button
-                        onclick="loginGitHub()"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-3 font-medium">
-                        Войти
+                        onclick="uploadMaterial()"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl p-3 font-medium">
+                        ⬆️ Загрузить материал
                     </button>
 
-
-                    <div id="loginStatus" class="mt-3 text-sm"></div>
+                    <div
+                        id="uploadStatus"
+                        class="mt-3 text-sm">
+                    </div>
 
                 </div>
 
+                <div>
 
-                <!-- Панель управления -->
-                <div id="adminContent" class="hidden">
+                    <h3 class="font-bold mb-3">
+                        📂 Файлы выбранной темы
+                    </h3>
 
-                    <div class="flex justify-between items-center mb-4">
-
-                        <div>
-
-                            <div class="font-medium">
-                                Администратор
-                            </div>
-
-                            <div
-                                id="githubUser"
-                                class="text-sm text-slate-500">
-                            </div>
-
-                        </div>
-
-                        <button
-                            onclick="logoutGitHub()"
-                            class="text-sm text-red-600">
-                            Выйти
-                        </button>
-
-                    </div>
-
-
-                    <!-- Выбор темы для загрузки -->
-                    <div class="grid gap-3 mb-4">
-
-                        <div>
-
-                            <label class="block text-sm font-medium mb-1">
-                                Предмет
-                            </label>
-
-                            <select
-                                id="adminSubject"
-                                class="w-full border border-slate-300 rounded-xl p-3"
-                                onchange="adminSubjectChanged()">
-                            </select>
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="block text-sm font-medium mb-1">
-                                Тема
-                            </label>
-
-                            <select
-                                id="adminTopic"
-                                class="w-full border border-slate-300 rounded-xl p-3">
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- Загрузка -->
-                    <div class="border border-slate-200 rounded-xl p-4 mb-4">
-
-                        <h3 class="font-bold mb-3">
-                            ➕ Добавить материал
-                        </h3>
-
-
-                        <label class="block text-sm font-medium mb-1">
-                            Название материала
-                        </label>
-
-                        <input
-                            id="uploadTitle"
-                            type="text"
-                            placeholder="Например: Лекция 1"
-                            class="w-full border border-slate-300 rounded-xl p-3 mb-3">
-
-
-                        <label class="block text-sm font-medium mb-1">
-                            Файл
-                        </label>
-
-                        <input
-                            id="uploadFile"
-                            type="file"
-                            accept=".md,.markdown,.pdf,.docx"
-                            class="w-full border border-slate-300 rounded-xl p-3 mb-3">
-
-
-                        <button
-                            onclick="uploadMaterial()"
-                            class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl p-3 font-medium">
-                            ⬆️ Загрузить материал
-                        </button>
-
-
-                        <div
-                            id="uploadStatus"
-                            class="mt-3 text-sm">
-                        </div>
-
-                    </div>
-
-
-                    <!-- Список файлов -->
-                    <div>
-
-                        <h3 class="font-bold mb-3">
-                            📂 Файлы выбранной темы
-                        </h3>
-
-                        <div id="adminFiles"></div>
-
-                    </div>
+                    <div id="adminFiles"></div>
 
                 </div>
 
@@ -578,45 +545,37 @@
 
         </div>
 
-    </section>
+    </div>
 
+</section>
 
-    <!-- Календарь -->
-    <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
 
-        <h2 class="text-xl font-bold mb-3">
-            📅 Календарь
-        </h2>
+    <h2 class="text-xl font-bold mb-3">
+        📅 Календарь
+    </h2>
 
+    <input
+        id="studyDate"
+        type="date"
+        class="border border-slate-300 rounded-xl p-3">
 
-        <input
-            id="studyDate"
-            type="date"
-            class="border border-slate-300 rounded-xl p-3">
+    <button
+        onclick="saveStudyDate()"
+        class="ml-2 bg-blue-600 text-white px-4 py-3 rounded-xl">
+        Сохранить
+    </button>
 
+    <div
+        id="dateStatus"
+        class="text-sm text-slate-500 mt-2">
+    </div>
 
-        <button
-            onclick="saveStudyDate()"
-            class="ml-2 bg-blue-600 text-white px-4 py-3 rounded-xl">
-            Сохранить
-        </button>
-
-
-        <div
-            id="dateStatus"
-            class="text-sm text-slate-500 mt-2">
-        </div>
-
-    </section>
+</section>
 
 </div>
 
-
 <script>
-
-/* =========================================================
-   НАСТРОЙКИ GITHUB
-   ========================================================= */
 
 const GITHUB_OWNER = "glushich1972-maker";
 const GITHUB_REPO = "study-v2";
@@ -627,11 +586,6 @@ const GITHUB_API =
 
 const PAGES_BASE =
     `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/`;
-
-
-/* =========================================================
-   ДАННЫЕ УЧЕБНИКА
-   ========================================================= */
 
 const STUDY_DATA = {
 
@@ -696,7 +650,6 @@ const STUDY_DATA = {
         }
     },
 
-
     semester2: {
 
         title: "2 семестр",
@@ -707,19 +660,9 @@ const STUDY_DATA = {
 
 };
 
-
-/* =========================================================
-   СОСТОЯНИЕ
-   ========================================================= */
-
 let currentSemester = "semester1";
 let currentSubject = "OK7";
 let currentFontSize = 18;
-
-
-/* =========================================================
-   ИНИЦИАЛИЗАЦИЯ
-   ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -735,11 +678,6 @@ document.addEventListener("DOMContentLoaded", () => {
     semesterChanged();
 
 });
-
-
-/* =========================================================
-   НАВИГАЦИЯ
-   ========================================================= */
 
 function populateSemesters() {
 
@@ -764,7 +702,6 @@ function populateSemesters() {
     select.value = currentSemester;
 }
 
-
 function semesterChanged() {
 
     currentSemester =
@@ -777,7 +714,6 @@ function semesterChanged() {
         document.getElementById("subjectSelect");
 
     subjectSelect.innerHTML = "";
-
 
     Object.entries(semester.subjects)
         .forEach(([id, subject]) => {
@@ -792,7 +728,6 @@ function semesterChanged() {
 
         });
 
-
     if (Object.keys(semester.subjects).length === 0) {
 
         currentSubject = null;
@@ -805,7 +740,6 @@ function semesterChanged() {
         return;
     }
 
-
     currentSubject =
         Object.keys(semester.subjects)[0];
 
@@ -814,7 +748,6 @@ function semesterChanged() {
 
     subjectChanged();
 }
-
 
 async function subjectChanged() {
 
@@ -826,11 +759,6 @@ async function subjectChanged() {
     await refreshMaterials();
 }
 
-
-/* =========================================================
-   ПОЛУЧЕНИЕ ТЕКУЩЕГО ПРЕДМЕТА
-   ========================================================= */
-
 function getCurrentSubject() {
 
     if (!currentSemester || !currentSubject)
@@ -839,21 +767,6 @@ function getCurrentSubject() {
     return STUDY_DATA[currentSemester]
         ?.subjects?.[currentSubject] || null;
 }
-
-
-/* =========================================================
-   РАБОТА С МАТЕРИАЛАМИ
-   ========================================================= */
-
-/*
- * Важное изменение:
- *
- * Раньше refreshMaterials() работала только
- * с одной выбранной темой.
- *
- * Теперь она проходит по ВСЕМ темам предмета
- * и объединяет файлы в одну библиотеку.
- */
 
 async function refreshMaterials() {
 
@@ -873,22 +786,15 @@ async function refreshMaterials() {
         return;
     }
 
-
     container.innerHTML =
         `<div class="text-slate-500">
             <span class="spinner"></span>
             Загрузка списка материалов...
          </div>`;
 
-
     try {
 
         const allMaterials = [];
-
-
-        /*
-         * Загружаем содержимое каждой папки темы.
-         */
 
         for (const topic of subject.topics) {
 
@@ -905,14 +811,8 @@ async function refreshMaterials() {
                         }
                     );
 
-
-                /*
-                 * Отсутствующая папка — это нормально.
-                 */
-
                 if (response.status === 404)
                     continue;
-
 
                 if (!response.ok)
                     throw new Error(
@@ -920,14 +820,11 @@ async function refreshMaterials() {
                         response.status
                     );
 
-
                 const files =
                     await response.json();
 
-
                 if (!Array.isArray(files))
                     continue;
-
 
                 files
                     .filter(file => file.type === "file")
@@ -959,7 +856,6 @@ async function refreshMaterials() {
 
         }
 
-
         if (!allMaterials.length) {
 
             container.innerHTML =
@@ -970,14 +866,7 @@ async function refreshMaterials() {
             return;
         }
 
-
         container.innerHTML = "";
-
-
-        /*
-         * Сортировка:
-         * сначала по теме, затем по имени файла.
-         */
 
         allMaterials.sort((a, b) => {
 
@@ -999,20 +888,16 @@ async function refreshMaterials() {
 
         });
 
-
         allMaterials.forEach(file => {
 
             const card =
                 document.createElement("div");
 
-
             card.className =
                 "material-card border border-slate-200 rounded-xl p-4";
 
-
             const ext =
                 getExtension(file.name);
-
 
             let icon = "📄";
 
@@ -1028,6 +913,8 @@ async function refreshMaterials() {
             )
                 icon = "📝";
 
+            if (ext === "html")
+                icon = "🌐";
 
             card.innerHTML = `
 
@@ -1055,18 +942,15 @@ async function refreshMaterials() {
                 </button>
             `;
 
-
             card.querySelector("button")
                 .addEventListener(
                     "click",
                     () => openMaterial(file)
                 );
 
-
             container.appendChild(card);
 
         });
-
 
     } catch (error) {
 
@@ -1085,15 +969,6 @@ async function refreshMaterials() {
 
 }
 
-
-/*
- * Убирает длинное начало:
- *
- * "Тема 1. ..."
- *
- * оставляя более короткую подпись.
- */
-
 function shortenTopicTitle(title) {
 
     return title
@@ -1102,26 +977,18 @@ function shortenTopicTitle(title) {
 
 }
 
-
-/* =========================================================
-   ОТКРЫТИЕ МАТЕРИАЛА
-   ========================================================= */
-
 async function openMaterial(file) {
 
     const content =
         document.getElementById("readerContent");
 
-
     const ext =
         getExtension(file.name);
-
 
     const rawUrl =
         `https://raw.githubusercontent.com/` +
         `${GITHUB_OWNER}/${GITHUB_REPO}/` +
         `${GITHUB_BRANCH}/${file.path}`;
-
 
     /* =========================
        MARKDOWN
@@ -1138,44 +1005,31 @@ async function openMaterial(file) {
                 Загрузка текста...
              </div>`;
 
-
         try {
 
             const response =
                 await fetch(rawUrl);
-
 
             if (!response.ok)
                 throw new Error(
                     "Не удалось загрузить Markdown"
                 );
 
-
             const text =
                 await response.text();
 
-
             content.innerHTML =
                 marked.parse(text);
-
 
             fixMarkdownImages(
                 content,
                 file.path
             );
 
-
             applyFontSize();
-
-
-            /*
-             * При открытии новой лекции
-             * возвращаем прокрутку в начало.
-             */
 
             document.getElementById("viewer")
                 .scrollTop = 0;
-
 
         } catch (error) {
 
@@ -1190,6 +1044,121 @@ async function openMaterial(file) {
         return;
     }
 
+    /* =========================
+       HTML
+       ========================= */
+
+    if (ext === "html") {
+
+        content.innerHTML =
+            `<div class="text-slate-500">
+                <span class="spinner"></span>
+                Загрузка HTML...
+             </div>`;
+
+        try {
+
+            const response =
+                await fetch(rawUrl);
+
+            if (!response.ok)
+                throw new Error(
+                    "Не удалось загрузить HTML"
+                );
+
+            const html =
+                await response.text();
+
+            const parser =
+                new DOMParser();
+
+            const doc =
+                parser.parseFromString(
+                    html,
+                    "text/html"
+                );
+
+            const body =
+                doc.body;
+
+            content.innerHTML = "";
+
+            const copyButton =
+                document.createElement("button");
+
+            copyButton.className =
+                "html-copy-button";
+
+            copyButton.textContent =
+                "📋 Копировать текст";
+
+            copyButton.addEventListener(
+                "click",
+                async () => {
+
+                    const text =
+                        body.innerText || body.textContent || "";
+
+                    try {
+
+                        await navigator.clipboard.writeText(text);
+
+                        copyButton.textContent =
+                            "✓ Скопировано";
+
+                        setTimeout(() => {
+
+                            copyButton.textContent =
+                                "📋 Копировать текст";
+
+                        }, 1500);
+
+                    } catch (error) {
+
+                        copyButton.textContent =
+                            "Не удалось скопировать";
+
+                    }
+
+                }
+            );
+
+            content.appendChild(copyButton);
+
+            Array.from(body.children)
+                .forEach(element => {
+
+                    if (
+                        element.tagName.toLowerCase() === "script"
+                    )
+                        return;
+
+                    content.appendChild(
+                        document.importNode(
+                            element,
+                            true
+                        )
+                    );
+
+                });
+
+            applyFontSize();
+
+            document.getElementById("viewer")
+                .scrollTop = 0;
+
+        } catch (error) {
+
+            content.innerHTML =
+                `<div class="text-red-600">
+                    Ошибка загрузки HTML:
+                    ${escapeHtml(error.message)}
+                 </div>`;
+
+        }
+
+        return;
+    }
 
     /* =========================
        PDF
@@ -1222,7 +1191,6 @@ async function openMaterial(file) {
         return;
     }
 
-
     /* =========================
        DOCX
        ========================= */
@@ -1232,11 +1200,9 @@ async function openMaterial(file) {
         const encoded =
             encodeURIComponent(rawUrl);
 
-
         const officeUrl =
             "https://view.officeapps.live.com/op/embed.aspx?src=" +
             encoded;
-
 
         content.innerHTML = `
 
@@ -1263,18 +1229,12 @@ async function openMaterial(file) {
         return;
     }
 
-
     content.innerHTML =
         `<div class="text-red-600">
             Этот тип файла пока не поддерживается.
          </div>`;
 
 }
-
-
-/* =========================================================
-   MARKDOWN
-   ========================================================= */
 
 function fixMarkdownImages(
     container,
@@ -1287,17 +1247,14 @@ function fixMarkdownImages(
             filePath.lastIndexOf("/") + 1
         );
 
-
     container.querySelectorAll("img")
         .forEach(img => {
 
             const src =
                 img.getAttribute("src");
 
-
             if (!src)
                 return;
-
 
             if (
                 src.startsWith("http://") ||
@@ -1309,10 +1266,8 @@ function fixMarkdownImages(
 
             }
 
-
             const imagePath =
                 directory + src;
-
 
             img.src =
                 `https://raw.githubusercontent.com/` +
@@ -1323,11 +1278,6 @@ function fixMarkdownImages(
 
 }
 
-
-/* =========================================================
-   ЧИТАЛКА — РАЗМЕР ШРИФТА
-   ========================================================= */
-
 function loadFontSize() {
 
     const saved =
@@ -1336,7 +1286,6 @@ function loadFontSize() {
                 "readerFontSize"
             )
         );
-
 
     if (
         Number.isFinite(saved) &&
@@ -1348,11 +1297,9 @@ function loadFontSize() {
 
     }
 
-
     applyFontSize();
 
 }
-
 
 function applyFontSize() {
 
@@ -1361,20 +1308,16 @@ function applyFontSize() {
             "readerContent"
         );
 
-
     if (!content)
         return;
 
-
     content.style.fontSize =
         `${currentFontSize}px`;
-
 
     const label =
         document.getElementById(
             "fontSizeLabel"
         );
-
 
     if (label) {
 
@@ -1383,12 +1326,10 @@ function applyFontSize() {
                 currentFontSize / 18 * 100
             );
 
-
         label.textContent =
             `${percent}%`;
 
     }
-
 
     localStorage.setItem(
         "readerFontSize",
@@ -1397,7 +1338,6 @@ function applyFontSize() {
 
 }
 
-
 function changeFontSize(direction) {
 
     const step = 2;
@@ -1405,26 +1345,15 @@ function changeFontSize(direction) {
     currentFontSize +=
         direction * step;
 
-
-    /*
-     * Ограничиваем разумный диапазон.
-     */
-
     if (currentFontSize < 14)
         currentFontSize = 14;
 
     if (currentFontSize > 30)
         currentFontSize = 30;
 
-
     applyFontSize();
 
 }
-
-
-/* =========================================================
-   ОЧИСТКА ЧИТАЛКИ
-   ========================================================= */
 
 function clearReader() {
 
@@ -1440,22 +1369,15 @@ function clearReader() {
 
 }
 
-
-/* =========================================================
-   АДМИНКА
-   ========================================================= */
-
 function openAdmin() {
 
     document
         .getElementById("adminPanel")
         .classList.remove("hidden");
 
-
     checkStoredToken();
 
 }
-
 
 function closeAdmin() {
 
@@ -1465,7 +1387,6 @@ function closeAdmin() {
 
 }
 
-
 function checkStoredToken() {
 
     const token =
@@ -1473,18 +1394,15 @@ function checkStoredToken() {
             "githubToken"
         );
 
-
     if (token) {
 
         document
             .getElementById("loginBlock")
             .classList.add("hidden");
 
-
         document
             .getElementById("adminContent")
             .classList.remove("hidden");
-
 
         populateAdminSubjects();
 
@@ -1496,7 +1414,6 @@ function checkStoredToken() {
             .getElementById("loginBlock")
             .classList.remove("hidden");
 
-
         document
             .getElementById("adminContent")
             .classList.add("hidden");
@@ -1505,7 +1422,6 @@ function checkStoredToken() {
 
 }
 
-
 async function loginGitHub() {
 
     const input =
@@ -1513,16 +1429,13 @@ async function loginGitHub() {
             "githubToken"
         );
 
-
     const token =
         input.value.trim();
-
 
     const status =
         document.getElementById(
             "loginStatus"
         );
-
 
     if (!token) {
 
@@ -1535,11 +1448,9 @@ async function loginGitHub() {
 
     }
 
-
     status.innerHTML =
         `<span class="spinner"></span>
          Проверяем доступ...`;
-
 
     try {
 
@@ -1562,7 +1473,6 @@ async function loginGitHub() {
                 }
             );
 
-
         if (!response.ok) {
 
             throw new Error(
@@ -1571,33 +1481,27 @@ async function loginGitHub() {
 
         }
 
-
         localStorage.setItem(
             "githubToken",
             token
         );
-
 
         status.innerHTML =
             `<span class="text-green-600">
                 Доступ получен.
              </span>`;
 
-
         document
             .getElementById("loginBlock")
             .classList.add("hidden");
-
 
         document
             .getElementById("adminContent")
             .classList.remove("hidden");
 
-
         populateAdminSubjects();
 
         loadAdminFiles();
-
 
     } catch (error) {
 
@@ -1610,29 +1514,21 @@ async function loginGitHub() {
 
 }
 
-
 function logoutGitHub() {
 
     localStorage.removeItem(
         "githubToken"
     );
 
-
     document
         .getElementById("adminContent")
         .classList.add("hidden");
-
 
     document
         .getElementById("loginBlock")
         .classList.remove("hidden");
 
 }
-
-
-/* =========================================================
-   АДМИН — ВЫБОР ПРЕДМЕТА И ТЕМЫ
-   ========================================================= */
 
 function populateAdminSubjects() {
 
@@ -1641,13 +1537,10 @@ function populateAdminSubjects() {
             "adminSubject"
         );
 
-
     select.innerHTML = "";
-
 
     const semester =
         STUDY_DATA[currentSemester];
-
 
     Object.entries(semester.subjects)
         .forEach(([id, subject]) => {
@@ -1657,26 +1550,21 @@ function populateAdminSubjects() {
                     "option"
                 );
 
-
             option.value = id;
 
             option.textContent =
                 subject.title;
 
-
             select.appendChild(option);
 
         });
 
-
     if (currentSubject)
         select.value = currentSubject;
-
 
     adminSubjectChanged();
 
 }
-
 
 function adminSubjectChanged() {
 
@@ -1685,24 +1573,19 @@ function adminSubjectChanged() {
             "adminSubject"
         ).value;
 
-
     const subject =
         STUDY_DATA[currentSemester]
             .subjects[subjectId];
-
 
     const select =
         document.getElementById(
             "adminTopic"
         );
 
-
     select.innerHTML = "";
-
 
     if (!subject)
         return;
-
 
     subject.topics.forEach(topic => {
 
@@ -1711,28 +1594,19 @@ function adminSubjectChanged() {
                 "option"
             );
 
-
         option.value =
             topic.id;
 
-
         option.textContent =
             topic.title;
-
 
         select.appendChild(option);
 
     });
 
-
     loadAdminFiles();
 
 }
-
-
-/* =========================================================
-   АДМИН — СПИСОК ФАЙЛОВ
-   ========================================================= */
 
 async function loadAdminFiles() {
 
@@ -1741,51 +1615,41 @@ async function loadAdminFiles() {
             "adminFiles"
         );
 
-
     if (!container)
         return;
-
 
     const topicId =
         document.getElementById(
             "adminTopic"
         )?.value;
 
-
     if (!topicId)
         return;
-
 
     const subjectId =
         document.getElementById(
             "adminSubject"
         ).value;
 
-
     const subject =
         STUDY_DATA[currentSemester]
             .subjects[subjectId];
 
-
     if (!subject)
         return;
-
 
     const topic =
         subject.topics.find(
             t => t.id === topicId
         );
 
-
     if (!topic)
         return;
-
 
     container.innerHTML =
         `<div class="text-slate-500">
             Загрузка...
          </div>`;
-
 
     try {
 
@@ -1793,7 +1657,6 @@ async function loadAdminFiles() {
             localStorage.getItem(
                 "githubToken"
             );
-
 
         const response =
             await fetch(
@@ -1803,7 +1666,6 @@ async function loadAdminFiles() {
                         githubHeaders(token)
                 }
             );
-
 
         if (response.status === 404) {
 
@@ -1816,19 +1678,15 @@ async function loadAdminFiles() {
 
         }
 
-
         if (!response.ok)
             throw new Error(
                 "Не удалось получить список файлов."
             );
 
-
         const files =
             await response.json();
 
-
         container.innerHTML = "";
-
 
         files
             .filter(
@@ -1841,10 +1699,8 @@ async function loadAdminFiles() {
                         "div"
                     );
 
-
                 row.className =
                     "border border-slate-200 rounded-xl p-3 mb-2";
-
 
                 row.innerHTML = `
 
@@ -1871,18 +1727,15 @@ async function loadAdminFiles() {
 
                 `;
 
-
                 row.querySelector("button")
                     .addEventListener(
                         "click",
                         () => deleteMaterial(file)
                     );
 
-
                 container.appendChild(row);
 
             });
-
 
     } catch (error) {
 
@@ -1895,18 +1748,12 @@ async function loadAdminFiles() {
 
 }
 
-
-/* =========================================================
-   ЗАГРУЗКА ФАЙЛА
-   ========================================================= */
-
 async function uploadMaterial() {
 
     const status =
         document.getElementById(
             "uploadStatus"
         );
-
 
     const title =
         document.getElementById(
@@ -1915,28 +1762,23 @@ async function uploadMaterial() {
         .value
         .trim();
 
-
     const fileInput =
         document.getElementById(
             "uploadFile"
         );
 
-
     const file =
         fileInput.files[0];
-
 
     const subjectId =
         document.getElementById(
             "adminSubject"
         ).value;
 
-
     const topicId =
         document.getElementById(
             "adminTopic"
         ).value;
-
 
     if (!file) {
 
@@ -1949,7 +1791,6 @@ async function uploadMaterial() {
 
     }
 
-
     if (file.size > 90 * 1024 * 1024) {
 
         status.innerHTML =
@@ -1961,31 +1802,28 @@ async function uploadMaterial() {
 
     }
 
-
     const allowed =
         [
             "md",
             "markdown",
             "pdf",
-            "docx"
+            "docx",
+            "html"
         ];
-
 
     const extension =
         getExtension(file.name);
-
 
     if (!allowed.includes(extension)) {
 
         status.innerHTML =
             `<span class="text-red-600">
-                Разрешены только MD, PDF и DOCX.
+                Разрешены только HTML, MD, PDF и DOCX.
              </span>`;
 
         return;
 
     }
-
 
     const topic =
         STUDY_DATA[currentSemester]
@@ -1994,7 +1832,6 @@ async function uploadMaterial() {
             .find(
                 t => t.id === topicId
             );
-
 
     if (!topic) {
 
@@ -2007,11 +1844,9 @@ async function uploadMaterial() {
 
     }
 
-
     status.innerHTML =
         `<span class="spinner"></span>
          Подготовка файла...`;
-
 
     try {
 
@@ -2020,12 +1855,10 @@ async function uploadMaterial() {
                 "githubToken"
             );
 
-
         if (!token)
             throw new Error(
                 "Сначала войдите в GitHub."
             );
-
 
         let filename =
             title
@@ -2036,17 +1869,13 @@ async function uploadMaterial() {
                     file.name
                 );
 
-
         const base64 =
             await fileToBase64(file);
-
 
         const path =
             `${topic.path}/${filename}`;
 
-
         let existingSha = null;
-
 
         const check =
             await fetch(
@@ -2057,23 +1886,19 @@ async function uploadMaterial() {
                 }
             );
 
-
         if (check.ok) {
 
             const existing =
                 await check.json();
-
 
             existingSha =
                 existing.sha;
 
         }
 
-
         status.innerHTML =
             `<span class="spinner"></span>
              Загружаем файл в GitHub...`;
-
 
         const body = {
 
@@ -2088,11 +1913,9 @@ async function uploadMaterial() {
 
         };
 
-
         if (existingSha)
             body.sha =
                 existingSha;
-
 
         const response =
             await fetch(
@@ -2108,7 +1931,6 @@ async function uploadMaterial() {
                 }
             );
 
-
         if (!response.ok) {
 
             const error =
@@ -2118,7 +1940,6 @@ async function uploadMaterial() {
                         () => ({})
                     );
 
-
             throw new Error(
                 error.message ||
                 "GitHub не принял файл."
@@ -2126,12 +1947,10 @@ async function uploadMaterial() {
 
         }
 
-
         status.innerHTML =
             `<span class="text-green-600">
                 ✓ Материал успешно загружен.
              </span>`;
-
 
         document
             .getElementById(
@@ -2139,19 +1958,15 @@ async function uploadMaterial() {
             )
             .value = "";
 
-
         fileInput.value = "";
-
 
         await loadAdminFiles();
 
         await refreshMaterials();
 
-
     } catch (error) {
 
         console.error(error);
-
 
         status.innerHTML =
             `<span class="text-red-600">
@@ -2163,11 +1978,6 @@ async function uploadMaterial() {
 
 }
 
-
-/* =========================================================
-   УДАЛЕНИЕ
-   ========================================================= */
-
 async function deleteMaterial(file) {
 
     const confirmed =
@@ -2175,10 +1985,8 @@ async function deleteMaterial(file) {
             `Удалить файл "${file.name}"?`
         );
 
-
     if (!confirmed)
         return;
-
 
     try {
 
@@ -2187,12 +1995,10 @@ async function deleteMaterial(file) {
                 "githubToken"
             );
 
-
         if (!token)
             throw new Error(
                 "Нет доступа к GitHub."
             );
-
 
         const response =
             await fetch(
@@ -2219,7 +2025,6 @@ async function deleteMaterial(file) {
                 }
             );
 
-
         if (!response.ok) {
 
             const error =
@@ -2229,7 +2034,6 @@ async function deleteMaterial(file) {
                         () => ({})
                     );
 
-
             throw new Error(
                 error.message ||
                 "Не удалось удалить файл."
@@ -2237,11 +2041,9 @@ async function deleteMaterial(file) {
 
         }
 
-
         await loadAdminFiles();
 
         await refreshMaterials();
-
 
     } catch (error) {
 
@@ -2253,11 +2055,6 @@ async function deleteMaterial(file) {
     }
 
 }
-
-
-/* =========================================================
-   GITHUB HELPERS
-   ========================================================= */
 
 function githubHeaders(token) {
 
@@ -2279,7 +2076,6 @@ function githubHeaders(token) {
 
 }
 
-
 function fileToBase64(file) {
 
     return new Promise(
@@ -2288,26 +2084,21 @@ function fileToBase64(file) {
             const reader =
                 new FileReader();
 
-
             reader.onload = () => {
 
                 const result =
                     reader.result;
 
-
                 const base64 =
                     result
                         .split(",")[1];
-
 
                 resolve(base64);
 
             };
 
-
             reader.onerror =
                 reject;
-
 
             reader.readAsDataURL(file);
 
@@ -2315,11 +2106,6 @@ function fileToBase64(file) {
     );
 
 }
-
-
-/* =========================================================
-   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-   ========================================================= */
 
 function getExtension(filename) {
 
@@ -2329,7 +2115,6 @@ function getExtension(filename) {
         .toLowerCase();
 
 }
-
 
 function sanitizeFilename(name) {
 
@@ -2352,12 +2137,10 @@ function sanitizeFilename(name) {
 
 }
 
-
 function formatBytes(bytes) {
 
     if (!bytes)
         return "0 Б";
-
 
     const units =
         [
@@ -2367,12 +2150,10 @@ function formatBytes(bytes) {
             "ГБ"
         ];
 
-
     let i = 0;
 
     let value =
         bytes;
-
 
     while (
         value >= 1024 &&
@@ -2385,7 +2166,6 @@ function formatBytes(bytes) {
 
     }
 
-
     return value.toFixed(
         value >= 10 || i === 0
             ? 0
@@ -2395,7 +2175,6 @@ function formatBytes(bytes) {
     units[i];
 
 }
-
 
 function escapeHtml(text) {
 
@@ -2428,11 +2207,6 @@ function escapeHtml(text) {
 
 }
 
-
-/* =========================================================
-   ТЕМА
-   ========================================================= */
-
 function toggleTheme() {
 
     const isDark =
@@ -2440,12 +2214,10 @@ function toggleTheme() {
             .classList
             .toggle("dark");
 
-
     localStorage.setItem(
         "darkMode",
         isDark ? "1" : "0"
     );
-
 
     document
         .getElementById(
@@ -2458,7 +2230,6 @@ function toggleTheme() {
 
 }
 
-
 function loadTheme() {
 
     const dark =
@@ -2466,13 +2237,11 @@ function loadTheme() {
             "darkMode"
         );
 
-
     if (dark === "1") {
 
         document.documentElement
             .classList
             .add("dark");
-
 
         document
             .getElementById(
@@ -2485,18 +2254,12 @@ function loadTheme() {
 
 }
 
-
-/* =========================================================
-   ПОЛНОЭКРАННЫЙ РЕЖИМ
-   ========================================================= */
-
 async function toggleFullscreen() {
 
     const viewer =
         document.getElementById(
             "viewer"
         );
-
 
     try {
 
@@ -2521,11 +2284,6 @@ async function toggleFullscreen() {
 
 }
 
-
-/*
- * Меняем текст кнопки после входа/выхода.
- */
-
 document.addEventListener(
     "fullscreenchange",
     () => {
@@ -2535,10 +2293,8 @@ document.addEventListener(
                 "fullscreenButton"
             );
 
-
         if (!button)
             return;
-
 
         if (document.fullscreenElement) {
 
@@ -2555,11 +2311,6 @@ document.addEventListener(
     }
 );
 
-
-/* =========================================================
-   КАЛЕНДАРЬ
-   ========================================================= */
-
 function saveStudyDate() {
 
     const value =
@@ -2567,12 +2318,10 @@ function saveStudyDate() {
             "studyDate"
         ).value;
 
-
     localStorage.setItem(
         "studyDate",
         value
     );
-
 
     document
         .getElementById(
