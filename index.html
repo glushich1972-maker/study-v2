@@ -337,30 +337,24 @@
 
     <div id="viewer" style="position: relative;">
 
-    <button
-        id="searchButton"
-        onclick="toggleSearch()"
-        title="Поиск по тексту"
-        style="
-    position: absolute;
-    top: 10px;
-    left: 10px !important;
-    right: auto !important;
-    z-index: 20;
-            opacity: 0.55;
-            border: none;
-            background: rgba(148,163,184,0.25);
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            font-size: 20px;
-            cursor: pointer;
-        ">
-        🔍
-    </button>
-
     <div id="readerToolbar">
-
+<button
+    id="searchButton"
+    onclick="toggleSearch()"
+    title="Поиск по тексту"
+    style="
+        margin-right: auto;
+        opacity: 0.55;
+        border: none;
+        background: rgba(148,163,184,0.25);
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        font-size: 20px;
+        cursor: pointer;
+    ">
+    🔍
+</button>
             <button
                 onclick="changeFontSize(-1)"
                 class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
