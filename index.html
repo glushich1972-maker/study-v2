@@ -1087,7 +1087,8 @@ async function openMaterial(file) {
                 doc.body;
 
             content.innerHTML = "";
-
+body.querySelectorAll(".html-copy-button, button")
+    .forEach(element => element.remove());
             Array.from(body.children)
                 .forEach(element => {
 
