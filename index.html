@@ -1088,48 +1088,6 @@ async function openMaterial(file) {
 
             content.innerHTML = "";
 
-            const copyButton =
-                document.createElement("button");
-
-            copyButton.className =
-                "html-copy-button";
-
-            copyButton.textContent =
-                "📋 Копировать текст";
-
-            copyButton.addEventListener(
-                "click",
-                async () => {
-
-                    const text =
-                        body.innerText || body.textContent || "";
-
-                    try {
-
-                        await navigator.clipboard.writeText(text);
-
-                        copyButton.textContent =
-                            "✓ Скопировано";
-
-                        setTimeout(() => {
-
-                            copyButton.textContent =
-                                "📋 Копировать текст";
-
-                        }, 1500);
-
-                    } catch (error) {
-
-                        copyButton.textContent =
-                            "Не удалось скопировать";
-
-                    }
-
-                }
-            );
-
-            content.appendChild(copyButton);
-
             Array.from(body.children)
                 .forEach(element => {
 
