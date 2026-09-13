@@ -948,10 +948,39 @@ const response =
             `;
 
             card.querySelector("button")
-                .addEventListener(
-                    "click",
-                    () => openMaterial(file)
-                );
+    .addEventListener(
+        "click",
+        async function () {
+
+            const button = this;
+
+            button.textContent = "⏳ Открывается…";
+            button.disabled = true;
+
+            const viewer =
+                document.getElementById("viewer");
+
+            const viewerSection =
+                viewer.closest("section");
+
+            viewerSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            await openMaterial(file);
+
+            button.textContent = "✓ Открыто";
+
+            setTimeout(() => {
+
+                button.textContent = "Открыть";
+                button.disabled = false;
+
+            }, 1000);
+
+        }
+    );
 
             container.appendChild(card);
 
