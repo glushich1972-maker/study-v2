@@ -664,6 +664,258 @@ let currentSemester = "semester1";
 let currentSubject = "OK7";
 let currentFontSize = 18;
 
+/* =========================
+   СОХРАНЕНИЕ МЕСТА ЧТЕНИЯ
+   ========================= */
+
+let currentReaderFile = null;
+let readerSaveTimer = null;
+
+function getProgressKey(file) {
+
+    return "readerProgress:" + file.path;
+
+}
+
+function isReadableTextFile(file) {
+
+    const ext =
+        getExtension(file.name);
+
+    return (
+        ext === "html" ||
+        ext === "md" ||
+        ext === "markdown"
+    );
+
+}
+
+function getViewerSection() {
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!viewer)
+        return null;
+
+    return viewer.closest("section");
+
+}
+
+function getReaderPosition(file) {
+
+    if (!file)
+        return null;
+
+    const saved =
+        localStorage.getItem(
+            getProgressKey(file)
+        );
+
+    if (!saved)
+        return null;
+
+    try {
+
+        return JSON.parse(saved);
+
+    } catch (error) {
+
+        return null;
+
+    }
+
+}
+
+function saveReaderPosition(file) {
+
+    if (!file || !isReadableTextFile(file))
+        return;
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!viewer)
+        return;
+
+    /* Полноэкранный режим */
+
+    if (document.fullscreenElement === viewer) {
+
+        localStorage.setItem(
+            getProgressKey(file),
+            JSON.stringify({
+                mode: "fullscreen",
+                position: viewer.scrollTop
+            })
+        );
+
+        return;
+
+    }
+
+    /* Обычный режим */
+
+    const section =
+        getViewerSection();
+
+    if (!section)
+        return;
+
+    const sectionTop =
+        section.getBoundingClientRect().top +
+        window.scrollY;
+
+    const position =
+        Math.max(
+            0,
+            window.scrollY - sectionTop
+        );
+
+    localStorage.setItem(
+        getProgressKey(file),
+        JSON.stringify({
+            mode: "page",
+            position: position
+        })
+    );
+
+}
+
+function restoreReaderPosition(file) {
+
+    if (!file || !isReadableTextFile(file))
+        return;
+
+    const saved =
+        getReaderPosition(file);
+
+    if (!saved)
+        return;
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!viewer)
+        return;
+
+    /*
+       Небольшая задержка нужна, чтобы браузер
+       успел полностью построить текст, картинки
+       и таблицы.
+    */
+
+    setTimeout(() => {
+
+        if (saved.mode === "fullscreen") {
+
+            if (document.fullscreenElement === viewer) {
+
+                viewer.scrollTo({
+                    top: Number(saved.position) || 0,
+                    behavior: "auto"
+                });
+
+            }
+
+            return;
+
+        }
+
+        const section =
+            getViewerSection();
+
+        if (!section)
+            return;
+
+        const sectionTop =
+            section.getBoundingClientRect().top +
+            window.scrollY;
+
+        window.scrollTo({
+            top:
+                sectionTop +
+                (Number(saved.position) || 0),
+            behavior: "auto"
+        });
+
+    }, 250);
+
+}
+
+/* Сохраняем позицию обычной страницы */
+
+window.addEventListener(
+    "scroll",
+    () => {
+
+        if (!currentReaderFile)
+            return;
+
+        if (
+            document.fullscreenElement ===
+            document.getElementById("viewer")
+        )
+            return;
+
+        clearTimeout(readerSaveTimer);
+
+        readerSaveTimer =
+            setTimeout(() => {
+
+                saveReaderPosition(
+                    currentReaderFile
+                );
+
+            }, 300);
+
+    },
+    { passive: true }
+);
+
+/* Сохраняем позицию внутри полноэкранного просмотрщика */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const viewer =
+            document.getElementById("viewer");
+
+        if (!viewer)
+            return;
+
+        viewer.addEventListener(
+            "scroll",
+            () => {
+
+                if (
+                    document.fullscreenElement !==
+                    viewer
+                )
+                    return;
+
+                if (!currentReaderFile)
+                    return;
+
+                clearTimeout(readerSaveTimer);
+
+                readerSaveTimer =
+                    setTimeout(() => {
+
+                        saveReaderPosition(
+                            currentReaderFile
+                        );
+
+                    }, 300);
+
+            },
+            { passive: true }
+        );
+
+    }
+);
+
 document.addEventListener("DOMContentLoaded", () => {
 
     loadTheme();
@@ -756,6 +1008,8 @@ async function subjectChanged() {
 
     clearReader();
 
+    currentReaderFile = null;
+
     await refreshMaterials();
 }
 
@@ -801,1534 +1055,24 @@ async function refreshMaterials() {
             try {
 
                 const token =
-    localStorage.getItem("githubToken");
+                    localStorage.getItem("githubToken");
 
-const response =
-    await fetch(
-        `${GITHUB_API}/${topic.path}`,
-        {
-            headers: token
-                ? githubHeaders(token)
-                : {
-                    "Accept":
-                        "application/vnd.github+json"
-                }
-        }
-    );
+                const response =
+                    await fetch(
+                        `${GITHUB_API}/${topic.path}`,
+                        {
+                            headers: token
+                                ? githubHeaders(token)
+                                : {
+                                    "Accept":
+                                        "application/vnd.github+json"
+                                }
+                        }
+                    );
 
                 if (response.status === 404)
                     continue;
 
                 if (!response.ok)
                     throw new Error(
-                        "Ошибка GitHub API: " +
-                        response.status
-                    );
-
-                const files =
-                    await response.json();
-
-                if (!Array.isArray(files))
-                    continue;
-
-                files
-                    .filter(file => file.type === "file")
-                    .forEach(file => {
-
-                        allMaterials.push({
-
-                            ...file,
-
-                            topicId:
-                                topic.id,
-
-                            topicTitle:
-                                topic.title
-
-                        });
-
-                    });
-
-            } catch (error) {
-
-                console.warn(
-                    "Не удалось загрузить тему:",
-                    topic.title,
-                    error
-                );
-
-            }
-
-        }
-
-        if (!allMaterials.length) {
-
-            container.innerHTML =
-                `<div class="text-slate-500">
-                    Материалы пока не загружены.
-                 </div>`;
-
-            return;
-        }
-
-        container.innerHTML = "";
-
-        allMaterials.sort((a, b) => {
-
-            const topicCompare =
-                a.topicId.localeCompare(
-                    b.topicId,
-                    undefined,
-                    { numeric: true }
-                );
-
-            if (topicCompare !== 0)
-                return topicCompare;
-
-            return a.name.localeCompare(
-                b.name,
-                undefined,
-                { numeric: true }
-            );
-
-        });
-
-        allMaterials.forEach(file => {
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "material-card border border-slate-200 rounded-xl p-4";
-
-            const ext =
-                getExtension(file.name);
-
-            let icon = "📄";
-
-            if (ext === "pdf")
-                icon = "📕";
-
-            if (ext === "docx")
-                icon = "📘";
-
-            if (
-                ext === "md" ||
-                ext === "markdown"
-            )
-                icon = "📝";
-
-            if (ext === "html")
-                icon = "🌐";
-
-            card.innerHTML = `
-
-                <div class="text-2xl mb-2">
-                    ${icon}
-                </div>
-
-                <div class="font-medium break-words">
-                    ${escapeHtml(file.name)}
-                </div>
-
-                <div class="text-xs text-slate-500 mt-2">
-                    ${escapeHtml(
-                        shortenTopicTitle(file.topicTitle)
-                    )}
-                </div>
-
-                <div class="text-xs text-slate-400 mt-1 uppercase">
-                    ${ext}
-                </div>
-
-                <button
-                    class="mt-3 w-full bg-blue-600 text-white rounded-lg py-2">
-                    Открыть
-                </button>
-            `;
-
-           card.querySelector("button")
-    .addEventListener(
-        "click",
-        async function () {
-
-            const button = this;
-
-            button.textContent = "⏳ Открывается…";
-            button.disabled = true;
-
-            const viewer =
-                document.getElementById("viewer");
-
-            const viewerSection =
-                viewer.closest("section");
-
-            // Сразу переводим пользователя к просмотру
-            viewerSection.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-            await openMaterial(file);
-
-            button.textContent = "✓ Открыто";
-
-            setTimeout(() => {
-
-                button.textContent = "Открыть";
-                button.disabled = false;
-
-            }, 1000);
-
-        }
-    ); 
-
-            container.appendChild(card);
-
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        container.innerHTML =
-            `<div class="text-red-600">
-                Не удалось загрузить список материалов.
-                <br>
-                <small>
-                    ${escapeHtml(error.message)}
-                </small>
-             </div>`;
-
-    }
-
-}
-
-function shortenTopicTitle(title) {
-
-    return title
-        .replace(/^Тема\s+\d+\.\s*/i, "")
-        .trim();
-
-}
-
-async function openMaterial(file) {
-
-    const content =
-        document.getElementById("readerContent");
-
-    const ext =
-        getExtension(file.name);
-
-    const rawUrl =
-        `https://raw.githubusercontent.com/` +
-        `${GITHUB_OWNER}/${GITHUB_REPO}/` +
-        `${GITHUB_BRANCH}/${file.path}`;
-
-    /* =========================
-       MARKDOWN
-       ========================= */
-
-    if (
-        ext === "md" ||
-        ext === "markdown"
-    ) {
-
-        content.innerHTML =
-            `<div class="text-slate-500">
-                <span class="spinner"></span>
-                Загрузка текста...
-             </div>`;
-
-        try {
-
-            const response =
-                await fetch(rawUrl);
-
-            if (!response.ok)
-                throw new Error(
-                    "Не удалось загрузить Markdown"
-                );
-
-            const text =
-                await response.text();
-
-            content.innerHTML =
-                marked.parse(text);
-
-            fixMarkdownImages(
-                content,
-                file.path
-            );
-
-            applyFontSize();
-
-            document.getElementById("viewer")
-                .scrollTop = 0;
-
-        } catch (error) {
-
-            content.innerHTML =
-                `<div class="text-red-600">
-                    Ошибка загрузки Markdown:
-                    ${escapeHtml(error.message)}
-                 </div>`;
-
-        }
-
-        return;
-    }
-
-    /* =========================
-       HTML
-       ========================= */
-
-    if (ext === "html") {
-
-        content.innerHTML =
-            `<div class="text-slate-500">
-                <span class="spinner"></span>
-                Загрузка HTML...
-             </div>`;
-
-        try {
-
-            const response =
-                await fetch(rawUrl);
-
-            if (!response.ok)
-                throw new Error(
-                    "Не удалось загрузить HTML"
-                );
-
-            const html =
-                await response.text();
-
-            const parser =
-                new DOMParser();
-
-            const doc =
-                parser.parseFromString(
-                    html,
-                    "text/html"
-                );
-
-            const body =
-                doc.body;
-
-            content.innerHTML = "";
-body.querySelectorAll(".html-copy-button, button")
-    .forEach(element => element.remove());
-            Array.from(body.children)
-                .forEach(element => {
-
-                    if (
-                        element.tagName.toLowerCase() === "script"
-                    )
-                        return;
-
-                    content.appendChild(
-                        document.importNode(
-                            element,
-                            true
-                        )
-                    );
-
-                });
-
-            applyFontSize();
-
-            document.getElementById("viewer")
-                .scrollTop = 0;
-
-        } catch (error) {
-
-            content.innerHTML =
-                `<div class="text-red-600">
-                    Ошибка загрузки HTML:
-                    ${escapeHtml(error.message)}
-                 </div>`;
-
-        }
-
-        return;
-    }
-
-    /* =========================
-       PDF
-       ========================= */
-
-    if (ext === "pdf") {
-
-        content.innerHTML = `
-
-            <iframe
-                class="viewer-frame"
-                src="${rawUrl}">
-            </iframe>
-
-            <div class="mt-3 text-center">
-
-                <a
-                    href="${rawUrl}"
-                    target="_blank"
-                    class="text-blue-600 underline">
-
-                    Открыть PDF отдельно
-
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-    /* =========================
-       DOCX
-       ========================= */
-
-    if (ext === "docx") {
-
-        const encoded =
-            encodeURIComponent(rawUrl);
-
-        const officeUrl =
-            "https://view.officeapps.live.com/op/embed.aspx?src=" +
-            encoded;
-
-        content.innerHTML = `
-
-            <iframe
-                class="viewer-frame"
-                src="${officeUrl}">
-            </iframe>
-
-            <div class="mt-3 text-center">
-
-                <a
-                    href="${rawUrl}"
-                    target="_blank"
-                    class="text-blue-600 underline">
-
-                    Открыть или скачать DOCX
-
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-    content.innerHTML =
-        `<div class="text-red-600">
-            Этот тип файла пока не поддерживается.
-         </div>`;
-
-}
-
-function fixMarkdownImages(
-    container,
-    filePath
-) {
-
-    const directory =
-        filePath.substring(
-            0,
-            filePath.lastIndexOf("/") + 1
-        );
-
-    container.querySelectorAll("img")
-        .forEach(img => {
-
-            const src =
-                img.getAttribute("src");
-
-            if (!src)
-                return;
-
-            if (
-                src.startsWith("http://") ||
-                src.startsWith("https://") ||
-                src.startsWith("/")
-            ) {
-
-                return;
-
-            }
-
-            const imagePath =
-                directory + src;
-
-            img.src =
-                `https://raw.githubusercontent.com/` +
-                `${GITHUB_OWNER}/${GITHUB_REPO}/` +
-                `${GITHUB_BRANCH}/${imagePath}`;
-
-        });
-
-}
-
-function loadFontSize() {
-
-    const saved =
-        Number(
-            localStorage.getItem(
-                "readerFontSize"
-            )
-        );
-
-    if (
-        Number.isFinite(saved) &&
-        saved >= 14 &&
-        saved <= 30
-    ) {
-
-        currentFontSize = saved;
-
-    }
-
-    applyFontSize();
-
-}
-
-function applyFontSize() {
-
-    const content =
-        document.getElementById(
-            "readerContent"
-        );
-
-    if (!content)
-        return;
-
-    content.style.fontSize =
-        `${currentFontSize}px`;
-
-    const label =
-        document.getElementById(
-            "fontSizeLabel"
-        );
-
-    if (label) {
-
-        const percent =
-            Math.round(
-                currentFontSize / 18 * 100
-            );
-
-        label.textContent =
-            `${percent}%`;
-
-    }
-
-    localStorage.setItem(
-        "readerFontSize",
-        currentFontSize
-    );
-
-}
-
-function changeFontSize(direction) {
-
-    const step = 2;
-
-    currentFontSize +=
-        direction * step;
-
-    if (currentFontSize < 14)
-        currentFontSize = 14;
-
-    if (currentFontSize > 30)
-        currentFontSize = 30;
-
-    applyFontSize();
-
-}
-
-function clearReader() {
-
-    document.getElementById(
-        "readerContent"
-    ).innerHTML = `
-
-        <div class="text-slate-500">
-            Выберите материал.
-        </div>
-
-    `;
-
-}
-
-function openAdmin() {
-
-    document
-        .getElementById("adminPanel")
-        .classList.remove("hidden");
-
-    checkStoredToken();
-
-}
-
-function closeAdmin() {
-
-    document
-        .getElementById("adminPanel")
-        .classList.add("hidden");
-
-}
-
-function checkStoredToken() {
-
-    const token =
-        localStorage.getItem(
-            "githubToken"
-        );
-
-    if (token) {
-
-        document
-            .getElementById("loginBlock")
-            .classList.add("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.remove("hidden");
-
-        populateAdminSubjects();
-
-        loadAdminFiles();
-
-    } else {
-
-        document
-            .getElementById("loginBlock")
-            .classList.remove("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.add("hidden");
-
-    }
-
-}
-
-async function loginGitHub() {
-
-    const input =
-        document.getElementById(
-            "githubToken"
-        );
-
-    const token =
-        input.value.trim();
-
-    const status =
-        document.getElementById(
-            "loginStatus"
-        );
-
-    if (!token) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Введите GitHub-токен.
-             </span>`;
-
-        return;
-
-    }
-
-    status.innerHTML =
-        `<span class="spinner"></span>
-         Проверяем доступ...`;
-
-    try {
-
-        const response =
-            await fetch(
-                `${GITHUB_API}`,
-                {
-                    headers: {
-
-                        "Accept":
-                            "application/vnd.github+json",
-
-                        "Authorization":
-                            `Bearer ${token}`,
-
-                        "X-GitHub-Api-Version":
-                            "2022-11-28"
-
-                    }
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "GitHub не принял токен."
-            );
-
-        }
-
-        localStorage.setItem(
-            "githubToken",
-            token
-        );
-
-        status.innerHTML =
-            `<span class="text-green-600">
-                Доступ получен.
-             </span>`;
-
-        document
-            .getElementById("loginBlock")
-            .classList.add("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.remove("hidden");
-
-        populateAdminSubjects();
-
-        loadAdminFiles();
-
-    } catch (error) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                ${escapeHtml(error.message)}
-             </span>`;
-
-    }
-
-}
-
-function logoutGitHub() {
-
-    localStorage.removeItem(
-        "githubToken"
-    );
-
-    document
-        .getElementById("adminContent")
-        .classList.add("hidden");
-
-    document
-        .getElementById("loginBlock")
-        .classList.remove("hidden");
-
-}
-
-function populateAdminSubjects() {
-
-    const select =
-        document.getElementById(
-            "adminSubject"
-        );
-
-    select.innerHTML = "";
-
-    const semester =
-        STUDY_DATA[currentSemester];
-
-    Object.entries(semester.subjects)
-        .forEach(([id, subject]) => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value = id;
-
-            option.textContent =
-                subject.title;
-
-            select.appendChild(option);
-
-        });
-
-    if (currentSubject)
-        select.value = currentSubject;
-
-    adminSubjectChanged();
-
-}
-
-function adminSubjectChanged() {
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const subject =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId];
-
-    const select =
-        document.getElementById(
-            "adminTopic"
-        );
-
-    select.innerHTML = "";
-
-    if (!subject)
-        return;
-
-    subject.topics.forEach(topic => {
-
-        const option =
-            document.createElement(
-                "option"
-            );
-
-        option.value =
-            topic.id;
-
-        option.textContent =
-            topic.title;
-
-        select.appendChild(option);
-
-    });
-
-    loadAdminFiles();
-
-}
-
-async function loadAdminFiles() {
-
-    const container =
-        document.getElementById(
-            "adminFiles"
-        );
-
-    if (!container)
-        return;
-
-    const topicId =
-        document.getElementById(
-            "adminTopic"
-        )?.value;
-
-    if (!topicId)
-        return;
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const subject =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId];
-
-    if (!subject)
-        return;
-
-    const topic =
-        subject.topics.find(
-            t => t.id === topicId
-        );
-
-    if (!topic)
-        return;
-
-    container.innerHTML =
-        `<div class="text-slate-500">
-            Загрузка...
-         </div>`;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${topic.path}`,
-                {
-                    headers:
-                        githubHeaders(token)
-                }
-            );
-
-        if (response.status === 404) {
-
-            container.innerHTML =
-                `<div class="text-slate-500">
-                    Файлов пока нет.
-                 </div>`;
-
-            return;
-
-        }
-
-        if (!response.ok)
-            throw new Error(
-                "Не удалось получить список файлов."
-            );
-
-        const files =
-            await response.json();
-
-        container.innerHTML = "";
-
-        files
-            .filter(
-                file => file.type === "file"
-            )
-            .forEach(file => {
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-                row.className =
-                    "border border-slate-200 rounded-xl p-3 mb-2";
-
-                row.innerHTML = `
-
-                    <div class="flex items-center justify-between gap-3">
-
-                        <div class="min-w-0">
-
-                            <div class="font-medium break-words">
-                                ${escapeHtml(file.name)}
-                            </div>
-
-                            <div class="text-xs text-slate-500">
-                                ${formatBytes(file.size)}
-                            </div>
-
-                        </div>
-
-                        <button
-                            class="shrink-0 text-red-600 border border-red-200 px-3 py-2 rounded-lg">
-                            Удалить
-                        </button>
-
-                    </div>
-
-                `;
-
-                row.querySelector("button")
-                    .addEventListener(
-                        "click",
-                        () => deleteMaterial(file)
-                    );
-
-                container.appendChild(row);
-
-            });
-
-    } catch (error) {
-
-        container.innerHTML =
-            `<div class="text-red-600">
-                ${escapeHtml(error.message)}
-             </div>`;
-
-    }
-
-}
-
-async function uploadMaterial() {
-
-    const status =
-        document.getElementById(
-            "uploadStatus"
-        );
-
-    const title =
-        document.getElementById(
-            "uploadTitle"
-        )
-        .value
-        .trim();
-
-    const fileInput =
-        document.getElementById(
-            "uploadFile"
-        );
-
-    const file =
-        fileInput.files[0];
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const topicId =
-        document.getElementById(
-            "adminTopic"
-        ).value;
-
-    if (!file) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Выберите файл.
-             </span>`;
-
-        return;
-
-    }
-
-    if (file.size > 90 * 1024 * 1024) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Файл слишком большой. Максимум около 90 МБ.
-             </span>`;
-
-        return;
-
-    }
-
-    const allowed =
-        [
-            "md",
-            "markdown",
-            "pdf",
-            "docx",
-            "html"
-        ];
-
-    const extension =
-        getExtension(file.name);
-
-    if (!allowed.includes(extension)) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Разрешены только HTML, MD, PDF и DOCX.
-             </span>`;
-
-        return;
-
-    }
-
-    const topic =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId]
-            .topics
-            .find(
-                t => t.id === topicId
-            );
-
-    if (!topic) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Не удалось определить тему.
-             </span>`;
-
-        return;
-
-    }
-
-    status.innerHTML =
-        `<span class="spinner"></span>
-         Подготовка файла...`;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        if (!token)
-            throw new Error(
-                "Сначала войдите в GitHub."
-            );
-
-        let filename =
-            title
-                ? sanitizeFilename(title) +
-                  "." +
-                  extension
-                : sanitizeFilename(
-                    file.name
-                );
-
-        const base64 =
-            await fileToBase64(file);
-
-        const path =
-            `${topic.path}/${filename}`;
-
-        let existingSha = null;
-
-        const check =
-            await fetch(
-                `${GITHUB_API}/${path}`,
-                {
-                    headers:
-                        githubHeaders(token)
-                }
-            );
-
-        if (check.ok) {
-
-            const existing =
-                await check.json();
-
-            existingSha =
-                existing.sha;
-
-        }
-
-        status.innerHTML =
-            `<span class="spinner"></span>
-             Загружаем файл в GitHub...`;
-
-        const body = {
-
-            message:
-                `${existingSha ? "Обновление" : "Добавление"} материала: ${filename}`,
-
-            content:
-                base64,
-
-            branch:
-                GITHUB_BRANCH
-
-        };
-
-        if (existingSha)
-            body.sha =
-                existingSha;
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${path}`,
-                {
-                    method: "PUT",
-
-                    headers:
-                        githubHeaders(token),
-
-                    body:
-                        JSON.stringify(body)
-                }
-            );
-
-        if (!response.ok) {
-
-            const error =
-                await response
-                    .json()
-                    .catch(
-                        () => ({})
-                    );
-
-            throw new Error(
-                error.message ||
-                "GitHub не принял файл."
-            );
-
-        }
-
-        status.innerHTML =
-            `<span class="text-green-600">
-                ✓ Материал успешно загружен.
-             </span>`;
-
-        document
-            .getElementById(
-                "uploadTitle"
-            )
-            .value = "";
-
-        fileInput.value = "";
-
-        await loadAdminFiles();
-
-        await refreshMaterials();
-
-    } catch (error) {
-
-        console.error(error);
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Ошибка:
-                ${escapeHtml(error.message)}
-             </span>`;
-
-    }
-
-}
-
-async function deleteMaterial(file) {
-
-    const confirmed =
-        confirm(
-            `Удалить файл "${file.name}"?`
-        );
-
-    if (!confirmed)
-        return;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        if (!token)
-            throw new Error(
-                "Нет доступа к GitHub."
-            );
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${file.path}`,
-                {
-                    method: "DELETE",
-
-                    headers:
-                        githubHeaders(token),
-
-                    body:
-                        JSON.stringify({
-
-                            message:
-                                `Удаление материала: ${file.name}`,
-
-                            sha:
-                                file.sha,
-
-                            branch:
-                                GITHUB_BRANCH
-
-                        })
-                }
-            );
-
-        if (!response.ok) {
-
-            const error =
-                await response
-                    .json()
-                    .catch(
-                        () => ({})
-                    );
-
-            throw new Error(
-                error.message ||
-                "Не удалось удалить файл."
-            );
-
-        }
-
-        await loadAdminFiles();
-
-        await refreshMaterials();
-
-    } catch (error) {
-
-        alert(
-            "Ошибка удаления: " +
-            error.message
-        );
-
-    }
-
-}
-
-function githubHeaders(token) {
-
-    return {
-
-        "Accept":
-            "application/vnd.github+json",
-
-        "Authorization":
-            `Bearer ${token}`,
-
-        "X-GitHub-Api-Version":
-            "2022-11-28",
-
-        "Content-Type":
-            "application/json"
-
-    };
-
-}
-
-function fileToBase64(file) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const reader =
-                new FileReader();
-
-            reader.onload = () => {
-
-                const result =
-                    reader.result;
-
-                const base64 =
-                    result
-                        .split(",")[1];
-
-                resolve(base64);
-
-            };
-
-            reader.onerror =
-                reject;
-
-            reader.readAsDataURL(file);
-
-        }
-    );
-
-}
-
-function getExtension(filename) {
-
-    return filename
-        .split(".")
-        .pop()
-        .toLowerCase();
-
-}
-
-function sanitizeFilename(name) {
-
-    return name
-
-        .replace(
-            /[\\/:*?"<>|#%{}]/g,
-            "_"
-        )
-
-        .replace(
-            /\s+/g,
-            "_"
-        )
-
-        .substring(
-            0,
-            150
-        );
-
-}
-
-function formatBytes(bytes) {
-
-    if (!bytes)
-        return "0 Б";
-
-    const units =
-        [
-            "Б",
-            "КБ",
-            "МБ",
-            "ГБ"
-        ];
-
-    let i = 0;
-
-    let value =
-        bytes;
-
-    while (
-        value >= 1024 &&
-        i < units.length - 1
-    ) {
-
-        value /= 1024;
-
-        i++;
-
-    }
-
-    return value.toFixed(
-        value >= 10 || i === 0
-            ? 0
-            : 1
-    ) +
-    " " +
-    units[i];
-
-}
-
-function escapeHtml(text) {
-
-    return String(text)
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
-
-function toggleTheme() {
-
-    const isDark =
-        document.documentElement
-            .classList
-            .toggle("dark");
-
-    localStorage.setItem(
-        "darkMode",
-        isDark ? "1" : "0"
-    );
-
-    document
-        .getElementById(
-            "themeButton"
-        )
-        .textContent =
-        isDark
-            ? "☀️"
-            : "🌙";
-
-}
-
-function loadTheme() {
-
-    const dark =
-        localStorage.getItem(
-            "darkMode"
-        );
-
-    if (dark === "1") {
-
-        document.documentElement
-            .classList
-            .add("dark");
-
-        document
-            .getElementById(
-                "themeButton"
-            )
-            .textContent =
-            "☀️";
-
-    }
-
-}
-
-async function toggleFullscreen() {
-
-    const viewer =
-        document.getElementById(
-            "viewer"
-        );
-
-    try {
-
-        if (!document.fullscreenElement) {
-
-            await viewer.requestFullscreen();
-
-        } else {
-
-            await document.exitFullscreen();
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Ошибка полноэкранного режима:",
-            error
-        );
-
-    }
-
-}
-
-document.addEventListener(
-    "fullscreenchange",
-    () => {
-
-        const button =
-            document.getElementById(
-                "fullscreenButton"
-            );
-
-        if (!button)
-            return;
-
-        if (document.fullscreenElement) {
-
-            button.textContent =
-                "⛶ Выйти из полноэкранного режима";
-
-        } else {
-
-            button.textContent =
-                "⛶ На весь экран";
-
-        }
-
-    }
-);
-
-function saveStudyDate() {
-
-    const value =
-        document.getElementById(
-            "studyDate"
-        ).value;
-
-    localStorage.setItem(
-        "studyDate",
-        value
-    );
-
-    document
-        .getElementById(
-            "dateStatus"
-        )
-        .textContent =
-        value
-            ? "Дата сохранена."
-            : "Дата не выбрана.";
-
-}
-
-</script>
-
-</body>
-</html>
+                        "Ошибка GitHub API: "
