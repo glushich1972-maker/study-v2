@@ -1216,6 +1216,39 @@ function searchReaderText() {
 
     window.find(query);
 } 
+    function toggleSearch() {
+    const panel = document.getElementById("searchPanel");
+
+    if (panel) {
+        panel.remove();
+        return;
+    }
+
+    const newPanel = document.createElement("div");
+
+    newPanel.id = "searchPanel";
+
+    newPanel.innerHTML = `
+        <input
+            id="searchInput"
+            type="text"
+            placeholder="Найти в тексте..."
+        >
+
+        <button
+            onclick="searchReaderText()">
+            Поиск
+        </button>
+    `;
+
+    document
+        .getElementById("readerToolbar")
+        .after(newPanel);
+
+    document
+        .getElementById("searchInput")
+        .focus();
+}
 async function openMaterial(file) {
 
     saveReaderProgress();
