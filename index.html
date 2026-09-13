@@ -1010,7 +1010,122 @@ function shortenTopicTitle(title) {
         .trim();
 
 }
+let currentReaderFile = null;
+let readerSaveTimer = null;
 
+function readerProgressKey(file) {
+    return "readerProgress:" + file.path;
+}
+
+function saveReaderProgress() {
+
+    if (!currentReaderFile)
+        return;
+
+    const ext =
+        getExtension(currentReaderFile.name);
+
+    if (
+        ext !== "html" &&
+        ext !== "md" &&
+        ext !== "markdown"
+    )
+        return;
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!viewer)
+        return;
+
+    const section =
+        viewer.closest("section");
+
+    if (!section)
+        return;
+
+    const sectionTop =
+        section.getBoundingClientRect().top +
+        window.scrollY;
+
+    const position =
+        Math.max(
+            0,
+            window.scrollY - sectionTop
+        );
+
+    localStorage.setItem(
+        readerProgressKey(currentReaderFile),
+        String(position)
+    );
+}
+
+function restoreReaderProgress(file) {
+
+    const ext =
+        getExtension(file.name);
+
+    if (
+        ext !== "html" &&
+        ext !== "md" &&
+        ext !== "markdown"
+    )
+        return;
+
+    const saved =
+        localStorage.getItem(
+            readerProgressKey(file)
+        );
+
+    if (saved === null)
+        return;
+
+    const viewer =
+        document.getElementById("viewer");
+
+    if (!viewer)
+        return;
+
+    const section =
+        viewer.closest("section");
+
+    if (!section)
+        return;
+
+    setTimeout(() => {
+
+        const sectionTop =
+            section.getBoundingClientRect().top +
+            window.scrollY;
+
+        window.scrollTo({
+            top:
+                sectionTop +
+                (Number(saved) || 0),
+            behavior: "auto"
+        });
+
+    }, 200);
+}
+
+window.addEventListener(
+    "scroll",
+    () => {
+
+        if (!currentReaderFile)
+            return;
+
+        clearTimeout(readerSaveTimer);
+
+        readerSaveTimer =
+            setTimeout(
+                saveReaderProgress,
+                300
+            );
+
+    },
+    { passive: true }
+);
 async function openMaterial(file) {
 
     const content =
