@@ -948,10 +948,30 @@ const response =
             `;
 
             card.querySelector("button")
-                .addEventListener(
-                    "click",
-                    () => openMaterial(file)
-                );
+    .addEventListener(
+        "click",
+        async function () {
+
+            this.textContent = "⏳ Открывается…";
+            this.disabled = true;
+
+            await openMaterial(file);
+
+            document.getElementById("viewer")
+                .scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            this.textContent = "✓ Открыто";
+
+            setTimeout(() => {
+                this.textContent = "Открыть";
+                this.disabled = false;
+            }, 1000);
+
+        }
+    );
 
             container.appendChild(card);
 
