@@ -947,31 +947,41 @@ const response =
                 </button>
             `;
 
-            card.querySelector("button")
+           card.querySelector("button")
     .addEventListener(
         "click",
         async function () {
 
-            this.textContent = "⏳ Открывается…";
-            this.disabled = true;
+            const button = this;
+
+            button.textContent = "⏳ Открывается…";
+            button.disabled = true;
+
+            const viewer =
+                document.getElementById("viewer");
+
+            const viewerSection =
+                viewer.closest("section");
+
+            // Сразу переводим пользователя к просмотру
+            viewerSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
 
             await openMaterial(file);
 
-            document.getElementById("viewer")
-                .scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-
-            this.textContent = "✓ Открыто";
+            button.textContent = "✓ Открыто";
 
             setTimeout(() => {
-                this.textContent = "Открыть";
-                this.disabled = false;
+
+                button.textContent = "Открыть";
+                button.disabled = false;
+
             }, 1000);
 
         }
-    );
+    ); 
 
             container.appendChild(card);
 
