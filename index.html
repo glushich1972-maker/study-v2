@@ -1128,6 +1128,10 @@ window.addEventListener(
 );
 async function openMaterial(file) {
 
+    saveReaderProgress();
+
+    currentReaderFile = file;
+
     const content =
         document.getElementById("readerContent");
 
