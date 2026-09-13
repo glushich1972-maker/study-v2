@@ -340,7 +340,7 @@
     <div id="readerToolbar">
 <button
     id="searchButton"
-    onclick="toggleSearch()"
+    onclick="alert('Лупа работает')"
     title="Поиск по тексту"
     style="
         margin-right: auto;
@@ -1216,16 +1216,15 @@ function searchReaderText() {
 
     window.find(query);
 } 
-    window.toggleSearch = function () {
-
+    function toggleSearch() {
     const panel = document.getElementById("searchPanel");
 
     if (panel) {
         panel.remove();
         return;
     }
-            const newPanel =
-        document.createElement("div");
+
+    const newPanel = document.createElement("div");
 
     newPanel.id = "searchPanel";
 
@@ -1249,7 +1248,7 @@ function searchReaderText() {
     document
         .getElementById("searchInput")
         .focus();
-};
+}
 async function openMaterial(file) {
 
     saveReaderProgress();
