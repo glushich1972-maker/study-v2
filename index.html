@@ -1142,6 +1142,80 @@ window.addEventListener(
     },
     { passive: true }
 );
+   function toggleSearch() {
+
+    const existing =
+        document.getElementById("searchPanel");
+
+    if (existing) {
+        existing.remove();
+        return;
+    }
+
+    const panel =
+        document.createElement("div");
+
+    panel.id = "searchPanel";
+
+    panel.innerHTML = `
+        <input
+            id="searchInput"
+            type="text"
+            placeholder="Найти в тексте..."
+            style="
+                padding: 8px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                width: 200px;
+            "
+        >
+
+        <button
+            onclick="searchReaderText()"
+            class="secondary bg-slate-100 px-3 py-2 rounded-lg">
+            Поиск
+        </button>
+    `;
+
+    document
+        .getElementById("readerToolbar")
+        .after(panel);
+
+    document
+        .getElementById("searchInput")
+        .focus();
+}
+
+function searchReaderText() {
+
+    const input =
+        document.getElementById("searchInput");
+
+    const query =
+        input.value.trim();
+
+    if (!query)
+        return;
+
+    const content =
+        document.getElementById("readerContent");
+
+    if (!content)
+        return;
+
+    const text =
+        content.innerText.toLowerCase();
+
+    const position =
+        text.indexOf(query.toLowerCase());
+
+    if (position === -1) {
+        alert("Текст не найден");
+        return;
+    }
+
+    window.find(query);
+} 
 async function openMaterial(file) {
 
     saveReaderProgress();
