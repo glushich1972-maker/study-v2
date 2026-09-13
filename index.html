@@ -800,16 +800,21 @@ async function refreshMaterials() {
 
             try {
 
-                const response =
-                    await fetch(
-                        `${GITHUB_API}/${topic.path}`,
-                        {
-                            headers: {
-                                "Accept":
-                                    "application/vnd.github+json"
-                            }
-                        }
-                    );
+                const token =
+    localStorage.getItem("githubToken");
+
+const response =
+    await fetch(
+        `${GITHUB_API}/${topic.path}`,
+        {
+            headers: token
+                ? githubHeaders(token)
+                : {
+                    "Accept":
+                        "application/vnd.github+json"
+                }
+        }
+    );
 
                 if (response.status === 404)
                     continue;
