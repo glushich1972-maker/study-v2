@@ -1181,8 +1181,10 @@ async function openMaterial(file) {
 
             applyFontSize();
 
-            document.getElementById("viewer")
-                .scrollTop = 0;
+document.getElementById("viewer")
+    .scrollTop = 0;
+
+restoreReaderProgress(file);
 
         } catch (error) {
 
@@ -1255,7 +1257,7 @@ async function openMaterial(file) {
 
             applyFontSize();
 
-            document.getElementById("viewer")
+     restoreReaderProgress(file);       document.getElementById("viewer")
                 .scrollTop = 0;
 
         } catch (error) {
