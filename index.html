@@ -184,6 +184,38 @@
         background: #0f172a;
     }
 
+    .dark .cal-day {
+        background: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+
+    .dark .cal-day:hover {
+        background: #334155;
+    }
+
+    .dark .cal-day.other-month {
+        color: #475569;
+    }
+
+    .dark .cal-weekday {
+        color: #94a3b8;
+    }
+
+    .dark .cal-month-btn {
+        background: #334155;
+        color: #e2e8f0;
+    }
+
+    .dark .cal-month-btn:hover {
+        background: #475569;
+    }
+
+    .dark .cal-note-item {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
     .spinner {
         width: 22px;
         height: 22px;
@@ -222,6 +254,161 @@
         padding: .55rem .9rem;
         cursor: pointer;
         font-size: .9rem;
+    }
+
+    /* ===== Calendar styles ===== */
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+    }
+
+    .cal-weekday {
+        text-align: center;
+        font-size: .75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #64748b;
+        padding: .5rem 0;
+        letter-spacing: .05em;
+    }
+
+    .cal-day {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        border: 1px solid #e2e8f0;
+        border-radius: .75rem;
+        padding: .4rem;
+        cursor: pointer;
+        background: white;
+        transition: all .15s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 70px;
+        overflow: hidden;
+    }
+
+    .cal-day:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        transform: translateY(-1px);
+    }
+
+    .cal-day.other-month {
+        opacity: .35;
+    }
+
+    .cal-day.today {
+        border-color: #2563eb;
+        border-width: 2px;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
+    }
+
+    .cal-day.selected {
+        background: #eff6ff;
+        border-color: #2563eb;
+    }
+
+    .cal-day-num {
+        font-size: .95rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .cal-day.other-month .cal-day-num {
+        color: #94a3b8;
+    }
+
+    .cal-day.today .cal-day-num {
+        color: #2563eb;
+    }
+
+    .cal-day-dots {
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: flex-end;
+    }
+
+    .cal-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .cal-day-preview {
+        font-size: .7rem;
+        color: #475569;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-top: 2px;
+        line-height: 1.2;
+    }
+
+    .cal-month-btn {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: .5rem;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all .15s ease;
+    }
+
+    .cal-month-btn:hover {
+        background: #e2e8f0;
+    }
+
+    .cal-note-item {
+        border: 1px solid #e2e8f0;
+        border-radius: .75rem;
+        padding: .75rem;
+        background: #f8fafc;
+        margin-bottom: .5rem;
+    }
+
+    .cal-color-swatch {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all .15s ease;
+    }
+
+    .cal-color-swatch:hover {
+        transform: scale(1.1);
+    }
+
+    .cal-color-swatch.active {
+        border-color: #0f172a;
+        box-shadow: 0 0 0 2px white, 0 0 0 4px #0f172a;
+    }
+
+    .dark .cal-color-swatch.active {
+        border-color: #e2e8f0;
+        box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px #e2e8f0;
+    }
+
+    @media (max-width: 640px) {
+        .cal-day {
+            min-height: 50px;
+            padding: .25rem;
+        }
+        .cal-day-num {
+            font-size: .8rem;
+        }
+        .cal-day-preview {
+            display: none;
+        }
     }
 </style>
 </head>
@@ -340,7 +527,7 @@
     <div id="readerToolbar">
 <button
     id="searchButton"
-    onclick="alert('Лупа работает')"
+    onclick="toggleSearch()"
     title="Поиск по тексту"
     style="
         margin-right: auto;
@@ -382,6 +569,195 @@
             <div class="text-slate-500">
                 Выберите материал.
             </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===== Календарь ===== -->
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">
+            📅 Календарь
+        </h2>
+
+        <div class="flex items-center gap-2">
+            <button
+                onclick="calJumpToday()"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm"
+                title="Перейти к сегодняшнему дню">
+                Сегодня
+            </button>
+            <button
+                onclick="openAllNotes()"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm"
+                title="Все заметки">
+                📋 Все заметки
+            </button>
+        </div>
+    </div>
+
+    <!-- Навигация по месяцам -->
+    <div class="flex items-center justify-between mb-4">
+        <button class="cal-month-btn" onclick="calPrevMonth()" title="Предыдущий месяц">
+            ◀
+        </button>
+
+        <div class="flex items-center gap-2">
+            <select
+                id="calMonthSelect"
+                class="border border-slate-300 rounded-xl px-3 py-2 font-semibold"
+                onchange="calChangeMonth()">
+            </select>
+            <select
+                id="calYearSelect"
+                class="border border-slate-300 rounded-xl px-3 py-2 font-semibold"
+                onchange="calChangeMonth()">
+            </select>
+        </div>
+
+        <button class="cal-month-btn" onclick="calNextMonth()" title="Следующий месяц">
+            ▶
+        </button>
+    </div>
+
+    <!-- Сетка календаря -->
+    <div id="calGrid" class="cal-grid"></div>
+
+    <!-- Легенда -->
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+        <span class="font-medium">Метки:</span>
+        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#ef4444;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Экзамен</span>
+        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#f59e0b;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Дедлайн</span>
+        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#10b981;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Занятие</span>
+        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#3b82f6;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Важно</span>
+        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#8b5cf6;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Другое</span>
+    </div>
+
+</section>
+
+<!-- ===== Модалка заметки ===== -->
+<section
+    id="noteModal"
+    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+
+    <div class="max-w-xl mx-auto px-4 py-8">
+
+        <div class="panel bg-white rounded-2xl shadow-xl p-5">
+
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-xl font-bold" id="noteModalTitle">
+                        Заметка
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1" id="noteModalDate"></p>
+                </div>
+
+                <button
+                    onclick="closeNoteModal()"
+                    class="text-2xl leading-none px-2">
+                    ×
+                </button>
+            </div>
+
+            <!-- Выбор цвета метки -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">
+                    Цвет метки
+                </label>
+                <div class="flex gap-2" id="colorPicker">
+                    <div class="cal-color-swatch" data-color="#ef4444" style="background:#ef4444;" onclick="pickColor(this)" title="Экзамен"></div>
+                    <div class="cal-color-swatch" data-color="#f59e0b" style="background:#f59e0b;" onclick="pickColor(this)" title="Дедлайн"></div>
+                    <div class="cal-color-swatch" data-color="#10b981" style="background:#10b981;" onclick="pickColor(this)" title="Занятие"></div>
+                    <div class="cal-color-swatch" data-color="#3b82f6" style="background:#3b82f6;" onclick="pickColor(this)" title="Важно"></div>
+                    <div class="cal-color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="pickColor(this)" title="Другое"></div>
+                    <div class="cal-color-swatch" data-color="" style="background:#e2e8f0;" onclick="pickColor(this)" title="Без метки"></div>
+                </div>
+            </div>
+
+            <!-- Заголовок заметки -->
+            <div class="mb-3">
+                <label class="block text-sm font-medium mb-1">
+                    Заголовок
+                </label>
+                <input
+                    id="noteTitleInput"
+                    type="text"
+                    placeholder="Например: Экзамен по ОК 7"
+                    class="w-full border border-slate-300 rounded-xl p-3">
+            </div>
+
+            <!-- Текст заметки -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">
+                    Текст заметки
+                </label>
+                <textarea
+                    id="noteTextInput"
+                    rows="5"
+                    placeholder="Добавьте заметку..."
+                    class="w-full border border-slate-300 rounded-xl p-3 resize-y"></textarea>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="flex gap-2 flex-wrap">
+                <button
+                    onclick="saveNote()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium">
+                    💾 Сохранить
+                </button>
+                <button
+                    id="deleteNoteBtn"
+                    onclick="deleteNote()"
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium hidden">
+                    🗑 Удалить
+                </button>
+                <button
+                    onclick="closeNoteModal()"
+                    class="secondary bg-slate-100 px-4 py-2 rounded-xl">
+                    Отмена
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===== Модалка всех заметок ===== -->
+<section
+    id="allNotesModal"
+    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        <div class="panel bg-white rounded-2xl shadow-xl p-5">
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">
+                    📋 Все заметки
+                </h2>
+                <button
+                    onclick="closeAllNotes()"
+                    class="text-2xl leading-none px-2">
+                    ×
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <input
+                    id="notesSearchInput"
+                    type="text"
+                    placeholder="Поиск по заметкам..."
+                    class="w-full border border-slate-300 rounded-xl p-3"
+                    oninput="renderAllNotes()">
+            </div>
+
+            <div id="allNotesList" class="max-h-[60vh] overflow-y-auto"></div>
 
         </div>
 
@@ -565,30 +941,6 @@
 
 </section>
 
-<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-
-    <h2 class="text-xl font-bold mb-3">
-        📅 Календарь
-    </h2>
-
-    <input
-        id="studyDate"
-        type="date"
-        class="border border-slate-300 rounded-xl p-3">
-
-    <button
-        onclick="saveStudyDate()"
-        class="ml-2 bg-blue-600 text-white px-4 py-3 rounded-xl">
-        Сохранить
-    </button>
-
-    <div
-        id="dateStatus"
-        class="text-sm text-slate-500 mt-2">
-    </div>
-
-</section>
-
 </div>
 
 <script>
@@ -621,14 +973,14 @@ const STUDY_DATA = {
                     {
                         id: "topic1",
                         title:
-                            "Тема 1. Загальні питання правового регулювання охорони здоров’я в Україні",
+                            "Тема 1. Загальні питання правового регулювання охорони здоров'я в Україні",
                         path: "materials/OK7/topic1"
                     },
 
                     {
                         id: "topic2",
                         title:
-                            "Тема 2. Міжнародні та регіональні стандарти у сфері ментального здоров’я та психологічної діяльності",
+                            "Тема 2. Міжнародні та регіональні стандарти у сфері ментального здоров'я та психологічної діяльності",
                         path: "materials/OK7/topic2"
                     },
 
@@ -649,7 +1001,7 @@ const STUDY_DATA = {
                     {
                         id: "topic5",
                         title:
-                            "Тема 5. Правове забезпечення діяльності психолога у розв’язанні проблем соціально уразливих категорій населення",
+                            "Тема 5. Правове забезпечення діяльності психолога у розв'язанні проблем соціально уразливих категорій населення",
                         path: "materials/OK7/topic5"
                     },
 
@@ -680,19 +1032,402 @@ let currentSemester = "semester1";
 let currentSubject = "OK7";
 let currentFontSize = 18;
 
+/* ============================================================
+   КАЛЕНДАРЬ — состояние и данные
+   ============================================================ */
+let calViewDate = new Date(); // текущий просматриваемый месяц
+let calSelectedDate = null;   // выбранная дата (Date)
+let calNotes = {};            // { "YYYY-MM-DD": { title, text, color } }
+
+const CAL_MONTHS = [
+    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+];
+
+const CAL_WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
+function loadCalNotes() {
+    try {
+        const raw = localStorage.getItem("calendarNotes");
+        if (raw) calNotes = JSON.parse(raw);
+    } catch (e) {
+        calNotes = {};
+    }
+}
+
+function saveCalNotes() {
+    localStorage.setItem("calendarNotes", JSON.stringify(calNotes));
+}
+
+function dateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+}
+
+function formatDateLong(date) {
+    const d = date.getDate();
+    const m = CAL_MONTHS[date.getMonth()].toLowerCase();
+    const y = date.getFullYear();
+    const wd = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"][date.getDay()];
+    return `${d} ${m} ${y}, ${wd}`;
+}
+
+/* ===== Рендер календаря ===== */
+function renderCalendar() {
+    const grid = document.getElementById("calGrid");
+    if (!grid) return;
+
+    const year = calViewDate.getFullYear();
+    const month = calViewDate.getMonth();
+
+    // Обновляем селекторы
+    const monthSel = document.getElementById("calMonthSelect");
+    const yearSel = document.getElementById("calYearSelect");
+
+    if (monthSel && monthSel.options.length === 0) {
+        CAL_MONTHS.forEach((name, idx) => {
+            const opt = document.createElement("option");
+            opt.value = idx;
+            opt.textContent = name;
+            monthSel.appendChild(opt);
+        });
+    }
+    if (monthSel) monthSel.value = month;
+
+    if (yearSel && yearSel.options.length === 0) {
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.textContent = y;
+            yearSel.appendChild(opt);
+        }
+    }
+    if (yearSel) yearSel.value = year;
+
+    // Заголовки weekdays
+    let html = "";
+    CAL_WEEKDAYS.forEach(wd => {
+        html += `<div class="cal-weekday">${wd}</div>`;
+    });
+
+    // Первый день месяца
+    const firstDay = new Date(year, month, 1);
+    // Смещение: 0=пн ... 6=вс
+    let startOffset = firstDay.getDay() - 1;
+    if (startOffset < 0) startOffset = 6;
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const today = new Date();
+
+    // Дни предыдущего месяца
+    for (let i = startOffset - 1; i >= 0; i--) {
+        const d = daysInPrevMonth - i;
+        const cellDate = new Date(year, month - 1, d);
+        html += renderDayCell(cellDate, true, today);
+    }
+
+    // Дни текущего месяца
+    for (let d = 1; d <= daysInMonth; d++) {
+        const cellDate = new Date(year, month, d);
+        html += renderDayCell(cellDate, false, today);
+    }
+
+    // Дни следующего месяца — до конца сетки (6 строк × 7 = 42 ячейки)
+    const totalCells = startOffset + daysInMonth;
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for (let d = 1; d <= remaining; d++) {
+        const cellDate = new Date(year, month + 1, d);
+        html += renderDayCell(cellDate, true, today);
+    }
+
+    grid.innerHTML = html;
+
+    // Обработчики клика
+    grid.querySelectorAll(".cal-day").forEach(cell => {
+        cell.addEventListener("click", () => {
+            const key = cell.dataset.date;
+            const parts = key.split("-");
+            calSelectedDate = new Date(
+                parseInt(parts[0]),
+                parseInt(parts[1]) - 1,
+                parseInt(parts[2])
+            );
+            openNoteModal(calSelectedDate);
+        });
+    });
+}
+
+function renderDayCell(date, isOtherMonth, today) {
+    const key = dateKey(date);
+    const note = calNotes[key];
+    const isToday = isSameDay(date, today);
+    const isSelected = calSelectedDate && isSameDay(date, calSelectedDate);
+
+    let classes = "cal-day";
+    if (isOtherMonth) classes += " other-month";
+    if (isToday) classes += " today";
+    if (isSelected) classes += " selected";
+
+    let dotsHtml = "";
+    if (note && note.color) {
+        dotsHtml = `<div class="cal-day-dots"><span class="cal-dot" style="background:${escapeHtml(note.color)}"></span></div>`;
+    } else if (note) {
+        dotsHtml = `<div class="cal-day-dots"><span class="cal-dot" style="background:#94a3b8"></span></div>`;
+    }
+
+    let previewHtml = "";
+    if (note && note.title) {
+        previewHtml = `<div class="cal-day-preview" title="${escapeHtml(note.title)}">${escapeHtml(note.title)}</div>`;
+    }
+
+    return `
+        <div class="${classes}" data-date="${key}">
+            <div class="cal-day-num">${date.getDate()}</div>
+            ${previewHtml}
+            ${dotsHtml}
+        </div>
+    `;
+}
+
+/* ===== Навигация ===== */
+function calPrevMonth() {
+    calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() - 1, 1);
+    renderCalendar();
+}
+
+function calNextMonth() {
+    calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() + 1, 1);
+    renderCalendar();
+}
+
+function calChangeMonth() {
+    const month = parseInt(document.getElementById("calMonthSelect").value);
+    const year = parseInt(document.getElementById("calYearSelect").value);
+    calViewDate = new Date(year, month, 1);
+    renderCalendar();
+}
+
+function calJumpToday() {
+    const today = new Date();
+    calViewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    calSelectedDate = today;
+    renderCalendar();
+    // Скролл к календарю
+    document.getElementById("calGrid").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ===== Модалка заметки ===== */
+let currentNoteColor = "";
+
+function openNoteModal(date) {
+    const modal = document.getElementById("noteModal");
+    modal.classList.remove("hidden");
+
+    document.getElementById("noteModalTitle").textContent = "Заметка";
+    document.getElementById("noteModalDate").textContent = formatDateLong(date);
+
+    const key = dateKey(date);
+    const note = calNotes[key];
+
+    document.getElementById("noteTitleInput").value = note?.title || "";
+    document.getElementById("noteTextInput").value = note?.text || "";
+    currentNoteColor = note?.color || "";
+
+    // Показать/скрыть кнопку удаления
+    const delBtn = document.getElementById("deleteNoteBtn");
+    if (note) {
+        delBtn.classList.remove("hidden");
+    } else {
+        delBtn.classList.add("hidden");
+    }
+
+    // Подсветить активный цвет
+    updateColorPicker();
+
+    document.getElementById("noteTitleInput").focus();
+}
+
+function closeNoteModal() {
+    document.getElementById("noteModal").classList.add("hidden");
+}
+
+function pickColor(el) {
+    currentNoteColor = el.dataset.color || "";
+    updateColorPicker();
+}
+
+function updateColorPicker() {
+    document.querySelectorAll("#colorPicker .cal-color-swatch").forEach(sw => {
+        if ((sw.dataset.color || "") === currentNoteColor) {
+            sw.classList.add("active");
+        } else {
+            sw.classList.remove("active");
+        }
+    });
+}
+
+function saveNote() {
+    if (!calSelectedDate) return;
+
+    const title = document.getElementById("noteTitleInput").value.trim();
+    const text = document.getElementById("noteTextInput").value.trim();
+
+    if (!title && !text && !currentNoteColor) {
+        // Нечего сохранять — удалим если было
+        const key = dateKey(calSelectedDate);
+        if (calNotes[key]) {
+            delete calNotes[key];
+            saveCalNotes();
+            renderCalendar();
+        }
+        closeNoteModal();
+        return;
+    }
+
+    const key = dateKey(calSelectedDate);
+    calNotes[key] = {
+        title: title,
+        text: text,
+        color: currentNoteColor,
+        created: calNotes[key]?.created || Date.now(),
+        updated: Date.now()
+    };
+
+    saveCalNotes();
+    renderCalendar();
+    closeNoteModal();
+}
+
+function deleteNote() {
+    if (!calSelectedDate) return;
+    if (!confirm("Удалить заметку за эту дату?")) return;
+
+    const key = dateKey(calSelectedDate);
+    delete calNotes[key];
+    saveCalNotes();
+    renderCalendar();
+    closeNoteModal();
+}
+
+/* ===== Все заметки ===== */
+function openAllNotes() {
+    document.getElementById("allNotesModal").classList.remove("hidden");
+    document.getElementById("notesSearchInput").value = "";
+    renderAllNotes();
+}
+
+function closeAllNotes() {
+    document.getElementById("allNotesModal").classList.add("hidden");
+}
+
+function renderAllNotes() {
+    const container = document.getElementById("allNotesList");
+    const query = (document.getElementById("notesSearchInput")?.value || "").toLowerCase().trim();
+
+    const entries = Object.entries(calNotes)
+        .filter(([key, note]) => {
+            if (!query) return true;
+            return (note.title || "").toLowerCase().includes(query) ||
+                   (note.text || "").toLowerCase().includes(query) ||
+                   key.includes(query);
+        })
+        .sort((a, b) => b[0].localeCompare(a[0])); // новые сверху
+
+    if (!entries.length) {
+        container.innerHTML = `
+            <div class="text-slate-500 text-center py-8">
+                ${query ? "Ничего не найдено." : "Заметок пока нет. Кликайте по дням в календаре, чтобы добавить."}
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = entries.map(([key, note]) => {
+        const parts = key.split("-");
+        const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const colorDot = note.color
+            ? `<span class="cal-dot" style="background:${escapeHtml(note.color)};width:12px;height:12px;border-radius:50%;display:inline-block;"></span>`
+            : "";
+
+        return `
+            <div class="cal-note-item" data-key="${key}">
+                <div class="flex items-start justify-between gap-2 mb-1">
+                    <div class="flex items-center gap-2 min-w-0">
+                        ${colorDot}
+                        <span class="font-semibold">${escapeHtml(formatDateLong(date))}</span>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="editNoteFromList('${key}')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg text-sm" title="Редактировать">✏️</button>
+                        <button onclick="deleteNoteFromList('${key}')" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg text-sm" title="Удалить">🗑</button>
+                    </div>
+                </div>
+                ${note.title ? `<div class="font-medium mb-1">${escapeHtml(note.title)}</div>` : ""}
+                ${note.text ? `<div class="text-sm text-slate-600 whitespace-pre-wrap break-words">${escapeHtml(note.text)}</div>` : ""}
+            </div>
+        `;
+    }).join("");
+}
+
+function editNoteFromList(key) {
+    closeAllNotes();
+    const parts = key.split("-");
+    calSelectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    calViewDate = new Date(calSelectedDate.getFullYear(), calSelectedDate.getMonth(), 1);
+    renderCalendar();
+    openNoteModal(calSelectedDate);
+}
+
+function deleteNoteFromList(key) {
+    if (!confirm("Удалить эту заметку?")) return;
+    delete calNotes[key];
+    saveCalNotes();
+    renderCalendar();
+    renderAllNotes();
+}
+
+/* ============================================================
+   Инициализация
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
     loadTheme();
-
     loadFontSize();
-
     populateSemesters();
-
-    document.getElementById("studyDate").value =
-        localStorage.getItem("studyDate") || "";
-
     semesterChanged();
 
+    // Календарь
+    loadCalNotes();
+    renderCalendar();
+
+    // Закрытие модалок по клику на фон
+    document.getElementById("noteModal").addEventListener("click", (e) => {
+        if (e.target.id === "noteModal") closeNoteModal();
+    });
+    document.getElementById("allNotesModal").addEventListener("click", (e) => {
+        if (e.target.id === "allNotesModal") closeAllNotes();
+    });
+
+    // Закрытие по Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            if (!document.getElementById("noteModal").classList.contains("hidden")) {
+                closeNoteModal();
+            } else if (!document.getElementById("allNotesModal").classList.contains("hidden")) {
+                closeAllNotes();
+            }
+        }
+    });
 });
 
 function populateSemesters() {
@@ -1142,7 +1877,8 @@ window.addEventListener(
     },
     { passive: true }
 );
-   function toggleSearch() {
+
+function toggleSearch() {
 
     const existing =
         document.getElementById("searchPanel");
@@ -1157,6 +1893,8 @@ window.addEventListener(
 
     panel.id = "searchPanel";
 
+    panel.style.cssText = "display:flex;gap:.5rem;padding:.5rem 0;";
+
     panel.innerHTML = `
         <input
             id="searchInput"
@@ -1166,7 +1904,7 @@ window.addEventListener(
                 padding: 8px;
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
-                width: 200px;
+                flex: 1;
             "
         >
 
@@ -1197,58 +1935,11 @@ function searchReaderText() {
     if (!query)
         return;
 
-    const content =
-        document.getElementById("readerContent");
-
-    if (!content)
-        return;
-
-    const text =
-        content.innerText.toLowerCase();
-
-    const position =
-        text.indexOf(query.toLowerCase());
-
-    if (position === -1) {
+    if (!window.find(query)) {
         alert("Текст не найден");
-        return;
     }
-
-    window.find(query);
-} 
-    function toggleSearch() {
-    const panel = document.getElementById("searchPanel");
-
-    if (panel) {
-        panel.remove();
-        return;
-    }
-
-    const newPanel = document.createElement("div");
-
-    newPanel.id = "searchPanel";
-
-    newPanel.innerHTML = `
-        <input
-            id="searchInput"
-            type="text"
-            placeholder="Найти в тексте..."
-        >
-
-        <button
-            onclick="searchReaderText()">
-            Поиск
-        </button>
-    `;
-
-    document
-        .getElementById("readerToolbar")
-        .after(newPanel);
-
-    document
-        .getElementById("searchInput")
-        .focus();
 }
+
 async function openMaterial(file) {
 
     saveReaderProgress();
@@ -1265,10 +1956,6 @@ async function openMaterial(file) {
         `https://raw.githubusercontent.com/` +
         `${GITHUB_OWNER}/${GITHUB_REPO}/` +
         `${GITHUB_BRANCH}/${file.path}`;
-
-    /* =========================
-       MARKDOWN
-       ========================= */
 
     if (
         ext === "md" ||
@@ -1304,10 +1991,10 @@ async function openMaterial(file) {
 
             applyFontSize();
 
-document.getElementById("viewer")
-    .scrollTop = 0;
+            document.getElementById("viewer")
+                .scrollTop = 0;
 
-restoreReaderProgress(file);
+            restoreReaderProgress(file);
 
         } catch (error) {
 
@@ -1321,10 +2008,6 @@ restoreReaderProgress(file);
 
         return;
     }
-
-    /* =========================
-       HTML
-       ========================= */
 
     if (ext === "html") {
 
@@ -1380,7 +2063,9 @@ restoreReaderProgress(file);
 
             applyFontSize();
 
-     restoreReaderProgress(file);       document.getElementById("viewer")
+            restoreReaderProgress(file);
+
+            document.getElementById("viewer")
                 .scrollTop = 0;
 
         } catch (error) {
@@ -1395,10 +2080,6 @@ restoreReaderProgress(file);
 
         return;
     }
-
-    /* =========================
-       PDF
-       ========================= */
 
     if (ext === "pdf") {
 
@@ -1426,10 +2107,6 @@ restoreReaderProgress(file);
 
         return;
     }
-
-    /* =========================
-       DOCX
-       ========================= */
 
     if (ext === "docx") {
 
@@ -2546,29 +3223,6 @@ document.addEventListener(
 
     }
 );
-
-function saveStudyDate() {
-
-    const value =
-        document.getElementById(
-            "studyDate"
-        ).value;
-
-    localStorage.setItem(
-        "studyDate",
-        value
-    );
-
-    document
-        .getElementById(
-            "dateStatus"
-        )
-        .textContent =
-        value
-            ? "Дата сохранена."
-            : "Дата не выбрана.";
-
-}
 
 </script>
 
