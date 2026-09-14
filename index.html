@@ -588,7 +588,50 @@
     </div>
 
 </section>
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
 
+    <div class="flex items-center justify-between mb-4">
+
+        <h2 class="text-xl font-bold">
+            📅 Новый календарь
+        </h2>
+
+        <div class="flex gap-2">
+
+            <button
+                type="button"
+                onclick="changeCalendarMonth(-1)"
+                class="bg-slate-100 px-3 py-2 rounded-xl">
+                ◀
+            </button>
+
+            <button
+                type="button"
+                onclick="changeCalendarMonth(1)"
+                class="bg-slate-100 px-3 py-2 rounded-xl">
+                ▶
+            </button>
+
+        </div>
+
+    </div>
+
+    <div
+        id="calendarTitle"
+        class="text-lg font-semibold text-center mb-3">
+    </div>
+
+    <div
+        id="calendar"
+        class="grid grid-cols-7 gap-1">
+    </div>
+
+    <div
+        id="calendarNotes"
+        class="mt-4">
+    </div>
+
+</section>
 </div>
 
 <script>
@@ -2547,7 +2590,156 @@ document.addEventListener(
     }
 );
 
-function saveStudyDate() {
+function saveStudyDate()
+    let calendarDate = new Date();
+
+function renderCalendar() {
+
+    const calendar =
+        document.getElementById("calendar");
+
+    const title =
+        document.getElementById("calendarTitle");
+
+    if (!calendar || !title)
+        return;
+
+    const year =
+        calendarDate.getFullYear();
+
+    const month =
+        calendarDate.getMonth();
+
+    const monthNames = [
+        "Январь",
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь"
+    ];
+
+    title.textContent =
+        monthNames[month] + " " + year;
+
+    calendar.innerHTML = "";
+
+    const days = [
+        "Пн",
+        "Вт",
+        "Ср",
+        "Чт",
+        "Пт",
+        "Сб",
+        "Вс"
+    ];
+
+    days.forEach(day => {
+
+        const cell =
+            document.createElement("div");
+
+        cell.className =
+            "text-center text-xs font-medium text-slate-500 py-2";
+
+        cell.textContent = day;
+
+        calendar.appendChild(cell);
+
+    });
+
+    const firstDay =
+        new Date(year, month, 1);
+
+    let start =
+        firstDay.getDay();
+
+    start =
+        start === 0 ? 6 : start - 1;
+
+    const daysInMonth =
+        new Date(year, month + 1, 0).getDate();
+
+    for (
+        let i = 0;
+        i < start;
+        i++
+    ) {
+
+        calendar.appendChild(
+            document.createElement("div")
+        );
+
+    }
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const cell =
+            document.createElement("button");
+
+        cell.type = "button";
+
+        cell.className =
+            "p-2 rounded-lg text-center hover:bg-slate-100";
+
+        cell.textContent = day;
+
+        cell.onclick = () => {
+
+            const date =
+                `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+            localStorage.setItem(
+                "newCalendarDate",
+                date
+            );
+
+            renderCalendar();
+
+        };
+
+        const savedDate =
+            localStorage.getItem(
+                "newCalendarDate"
+            );
+
+        const currentDate =
+            `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        if (savedDate === currentDate) {
+
+            cell.classList.add(
+                "bg-slate-300"
+            );
+
+        }
+
+        calendar.appendChild(cell);
+
+    }
+
+}
+
+function changeCalendarMonth(direction) {
+
+    calendarDate.setMonth(
+        calendarDate.getMonth() + direction
+    );
+
+    renderCalendar();
+
+}
+{
 
     const value =
         document.getElementById(
