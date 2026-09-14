@@ -577,14 +577,45 @@
         class="border border-slate-300 rounded-xl p-3">
 
     <button
-        onclick="saveStudyDate()"
-        class="ml-2 bg-blue-600 text-white px-4 py-3 rounded-xl">
-        Сохранить
-    </button>
+        <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+
+    <div class="flex items-center justify-between mb-4">
+
+        <h2 class="text-xl font-bold">
+            📅 Календарь
+        </h2>
+
+        <div class="flex gap-2">
+
+            <button
+                onclick="changeCalendarMonth(-1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl">
+                ◀
+            </button>
+
+            <button
+                onclick="changeCalendarMonth(1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl">
+                ▶
+            </button>
+
+        </div>
+
+    </div>
 
     <div
-        id="dateStatus"
-        class="text-sm text-slate-500 mt-2">
+        id="calendarTitle"
+        class="text-lg font-semibold text-center mb-3">
+    </div>
+
+    <div
+        id="calendar"
+        class="grid grid-cols-7 gap-1">
+    </div>
+
+    <div
+        id="calendarNotes"
+        class="mt-4">
     </div>
 
 </section>
@@ -685,7 +716,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadTheme();
 
     loadFontSize();
-
+    
+renderCalendar();
     populateSemesters();
 
     document.getElementById("studyDate").value =
@@ -2547,26 +2579,48 @@ document.addEventListener(
     }
 );
 
-function saveStudyDate() {
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
 
-    const value =
-        document.getElementById(
-            "studyDate"
-        ).value;
+    <div class="flex items-center justify-between mb-4">
 
-    localStorage.setItem(
-        "studyDate",
-        value
-    );
+        <h2 class="text-xl font-bold">
+            📅 Календарь
+        </h2>
 
-    document
-        .getElementById(
-            "dateStatus"
-        )
-        .textContent =
-        value
-            ? "Дата сохранена."
-            : "Дата не выбрана.";
+        <div class="flex gap-2">
+
+            <button
+                onclick="changeCalendarMonth(-1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl">
+                ◀
+            </button>
+
+            <button
+                onclick="changeCalendarMonth(1)"
+                class="secondary bg-slate-100 px-3 py-2 rounded-xl">
+                ▶
+            </button>
+
+        </div>
+
+    </div>
+
+    <div
+        id="calendarTitle"
+        class="text-lg font-semibold text-center mb-3">
+    </div>
+
+    <div
+        id="calendar"
+        class="grid grid-cols-7 gap-1">
+    </div>
+
+    <div
+        id="calendarNotes"
+        class="mt-4">
+    </div>
+
+</section>
 
 }
 
