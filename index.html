@@ -2179,25 +2179,15 @@ function saveReaderProgress() {
     if (!viewer)
         return;
 
-    const section =
-        viewer.closest("section");
-
-    if (!section)
-        return;
-
-    const sectionTop =
-        section.getBoundingClientRect().top +
-        window.scrollY;
-
-    const position =
-        Math.max(
-            0,
-            window.scrollY - sectionTop
-        );
+    const data = {
+        windowScrollY: window.scrollY,
+        viewerScrollTop: viewer.scrollTop,
+        isFullscreen: !!document.fullscreenElement
+    };
 
     localStorage.setItem(
         readerProgressKey(currentReaderFile),
-        String(position)
+        JSON.stringify(data)
     );
 }
 
@@ -2221,32 +2211,37 @@ function restoreReaderProgress(file) {
     if (saved === null)
         return;
 
+    let data;
+    try {
+        data = JSON.parse(saved);
+    } catch (e) {
+        data = { windowScrollY: Number(saved), viewerScrollTop: 0, isFullscreen: false };
+    }
+
     const viewer =
         document.getElementById("viewer");
 
     if (!viewer)
         return;
 
-    const section =
-        viewer.closest("section");
-
-    if (!section)
-        return;
-
     setTimeout(() => {
 
-        const sectionTop =
-            section.getBoundingClientRect().top +
-            window.scrollY;
+        if (document.fullscreenElement && data.viewerScrollTop) {
+            viewer.scrollTop = data.viewerScrollTop;
+        } else if (data.windowScrollY) {
+            const section = viewer.closest("section");
+            if (section) {
+                const sectionTop =
+                    section.getBoundingClientRect().top +
+                    window.scrollY;
+                window.scrollTo({
+                    top: sectionTop + (Number(data.windowScrollY) || 0),
+                    behavior: "auto"
+                });
+            }
+        }
 
-        window.scrollTo({
-            top:
-                sectionTop +
-                (Number(saved) || 0),
-            behavior: "auto"
-        });
-
-    }, 200);
+    }, 400);
 }
 
 window.addEventListener(
@@ -2285,6 +2280,8 @@ async function openMaterial(file) {
         `${GITHUB_OWNER}/${GITHUB_REPO}/` +
         `${GITHUB_BRANCH}/${file.path}`;
 
+    await enterFullscreen();
+
     if (
         ext === "md" ||
         ext === "markdown"
@@ -2319,13 +2316,7 @@ async function openMaterial(file) {
 
             applyFontSize();
 
-            document.getElementById("viewer")
-                .scrollTop = 0;
-
             restoreReaderProgress(file);
-
-            // Автоматический переход в полноэкранный режим
-            enterFullscreen();
 
         } catch (error) {
 
@@ -2396,12 +2387,6 @@ async function openMaterial(file) {
 
             restoreReaderProgress(file);
 
-            document.getElementById("viewer")
-                .scrollTop = 0;
-
-            // Автоматический переход в полноэкранный режим
-            enterFullscreen();
-
         } catch (error) {
 
             content.innerHTML =
@@ -2439,9 +2424,6 @@ async function openMaterial(file) {
 
         `;
 
-        // Автоматический переход в полноэкранный режим
-        enterFullscreen();
-
         return;
     }
 
@@ -2476,9 +2458,6 @@ async function openMaterial(file) {
 
         `;
 
-        // Автоматический переход в полноэкранный режим
-        enterFullscreen();
-
         return;
     }
 
@@ -2489,14 +2468,17 @@ async function openMaterial(file) {
 
 }
 
-function enterFullscreen() {
+async function enterFullscreen() {
     const viewer = document.getElementById("viewer");
     if (!viewer) return;
     
     if (!document.fullscreenElement) {
-        viewer.requestFullscreen().catch(err => {
+        try {
+            await viewer.requestFullscreen();
+            await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (err) {
             console.warn("Не удалось войти в полноэкранный режим:", err);
-        });
+        }
     }
 }
 
