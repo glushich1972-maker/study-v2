@@ -2263,6 +2263,23 @@ window.addEventListener(
     { passive: true }
 );
 
+document.addEventListener("fullscreenchange", () => {
+    const viewer = document.getElementById("viewer");
+    if (!viewer) return;
+    
+    if (document.fullscreenElement) {
+        viewer.addEventListener("scroll", viewerScrollHandler, { passive: true });
+    } else {
+        viewer.removeEventListener("scroll", viewerScrollHandler);
+    }
+});
+
+function viewerScrollHandler() {
+    if (!currentReaderFile) return;
+    clearTimeout(readerSaveTimer);
+    readerSaveTimer = setTimeout(saveReaderProgress, 300);
+}
+
 async function openMaterial(file) {
 
     saveReaderProgress();
