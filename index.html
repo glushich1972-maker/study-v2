@@ -2324,6 +2324,9 @@ async function openMaterial(file) {
 
             restoreReaderProgress(file);
 
+            // Автоматический переход в полноэкранный режим
+            enterFullscreen();
+
         } catch (error) {
 
             content.innerHTML =
@@ -2396,6 +2399,9 @@ async function openMaterial(file) {
             document.getElementById("viewer")
                 .scrollTop = 0;
 
+            // Автоматический переход в полноэкранный режим
+            enterFullscreen();
+
         } catch (error) {
 
             content.innerHTML =
@@ -2433,6 +2439,9 @@ async function openMaterial(file) {
 
         `;
 
+        // Автоматический переход в полноэкранный режим
+        enterFullscreen();
+
         return;
     }
 
@@ -2467,6 +2476,9 @@ async function openMaterial(file) {
 
         `;
 
+        // Автоматический переход в полноэкранный режим
+        enterFullscreen();
+
         return;
     }
 
@@ -2475,6 +2487,17 @@ async function openMaterial(file) {
             Этот тип файла пока не поддерживается.
          </div>`;
 
+}
+
+function enterFullscreen() {
+    const viewer = document.getElementById("viewer");
+    if (!viewer) return;
+    
+    if (!document.fullscreenElement) {
+        viewer.requestFullscreen().catch(err => {
+            console.warn("Не удалось войти в полноэкранный режим:", err);
+        });
+    }
 }
 
 function fixMarkdownImages(
