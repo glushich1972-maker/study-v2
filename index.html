@@ -3,3578 +3,665 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Учебный помощник</title>
-
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <style>
-    html, body {
-        min-height: 100%;
-    }
-
-    body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                     Roboto, Arial, sans-serif;
-    }
-
-    .material-card {
-        transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .material-card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,.08);
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    #viewer {
-        position: relative;
-        min-height: 300px;
-        overflow: hidden;
-    }
-
-    #readerToolbar {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: .5rem;
-        padding: .5rem 0;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
-        flex-wrap: wrap;
-    }
-
-    #readerContent {
-        font-size: var(--reader-font-size, 18px);
-        line-height: 1.7;
-        overflow-wrap: anywhere;
-        word-break: normal;
-    }
-
-    #readerContent h1,
-    #readerContent h2,
-    #readerContent h3,
-    #readerContent h4 {
-        line-height: 1.3;
-        margin-top: 1.5em;
-        margin-bottom: .7em;
-    }
-
-    #readerContent p {
-        margin-top: .8em;
-        margin-bottom: .8em;
-    }
-
-    #readerContent li {
-        margin-top: .35em;
-        margin-bottom: .35em;
-    }
-
-    #readerContent img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 1rem auto;
-    }
-
-    #readerContent table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 1rem 0;
-        display: block;
-        overflow-x: auto;
-    }
-
-    #readerContent th,
-    #readerContent td {
-        border: 1px solid #cbd5e1;
-        padding: .6rem;
-        text-align: left;
-        vertical-align: top;
-    }
-
-    #readerContent pre {
-        overflow-x: auto;
-        padding: 1rem;
-        border-radius: .5rem;
-        background: #f1f5f9;
-        font-size: .9em;
-        line-height: 1.5;
-    }
-
-    #readerContent code {
-        overflow-wrap: anywhere;
-    }
-
-    #viewer:fullscreen {
-        width: 100vw;
-        height: 100vh;
-        box-sizing: border-box;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 1.25rem;
-        background: white;
-        color: #0f172a;
-    }
-
-    #viewer:fullscreen #readerContent {
-        max-width: 900px;
-        margin: 0 auto;
-        padding-bottom: 5rem;
-    }
-
-    #viewer:fullscreen #readerToolbar {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: white;
-        padding: .75rem 0;
-    }
-
-    #viewer:fullscreen #fullscreenButton {
-        display: none;
-    }
-
-    .dark #readerToolbar {
-        border-color: #334155;
-    }
-
-    .dark #readerContent th,
-    .dark #readerContent td {
-        border-color: #475569;
-    }
-
-    .dark #readerContent pre {
-        background: #1e293b;
-    }
-
-    .dark body {
-        background: #0f172a;
-        color: #e2e8f0;
-    }
-
-    .dark .panel {
-        background: #1e293b;
-        border-color: #334155;
-    }
-
-    .dark select,
-    .dark input,
-    .dark textarea {
-        background: #0f172a;
-        color: #e2e8f0;
-        border-color: #475569;
-    }
-
-    .dark .secondary {
-        background: #334155;
-        color: #e2e8f0;
-    }
-
-    .dark #viewer:fullscreen {
-        background: #0f172a;
-        color: #e2e8f0;
-    }
-
-    .dark #viewer:fullscreen #readerToolbar {
-        background: #0f172a;
-    }
-
-    .dark .cal-day {
-        background: #1e293b;
-        border-color: #334155;
-        color: #e2e8f0;
-    }
-
-    .dark .cal-day:hover {
-        background: #334155;
-    }
-
-    .dark .cal-day.other-month {
-        color: #475569;
-    }
-
-    .dark .cal-weekday {
-        color: #94a3b8;
-    }
-
-    .dark .cal-month-btn {
-        background: #334155;
-        color: #e2e8f0;
-    }
-
-    .dark .cal-month-btn:hover {
-        background: #475569;
-    }
-
-    .dark .cal-note-item {
-        background: #0f172a;
-        border-color: #334155;
-    }
-
-    .dark .search-panel {
-        background: #1e293b;
-        border-color: #334155;
-    }
-
-    .dark .search-input {
-        background: #0f172a;
-        border-color: #475569;
-        color: #e2e8f0;
-    }
-
-    .dark .search-btn {
-        background: #334155;
-        border-color: #475569;
-        color: #e2e8f0;
-    }
-
-    .dark .search-btn:hover {
-        background: #475569;
-    }
-
-    .dark .search-counter {
-        color: #94a3b8;
-    }
-
-    .dark .search-highlight {
-        background: #854d0e;
-        color: #fef08a;
-    }
-
-    .dark .search-highlight-active {
-        background: #ea580c;
-        color: white;
-    }
-
-    .spinner {
-        width: 22px;
-        height: 22px;
-        border: 3px solid #cbd5e1;
-        border-top-color: #2563eb;
-        border-radius: 50%;
-        animation: spin .8s linear infinite;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    iframe.viewer-frame {
-        width: 100%;
-        height: 75vh;
-        border: 0;
-    }
-
-    .font-size-label {
-        min-width: 52px;
-        text-align: center;
-        font-size: .85rem;
-        color: #64748b;
-    }
-
-    .cal-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-    }
-
-    .cal-weekday {
-        text-align: center;
-        font-size: .75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #64748b;
-        padding: .5rem 0;
-        letter-spacing: .05em;
-    }
-
-    .cal-day {
-        position: relative;
-        aspect-ratio: 1 / 1;
-        border: 1px solid #e2e8f0;
-        border-radius: .75rem;
-        padding: .4rem;
-        cursor: pointer;
-        background: white;
-        transition: all .15s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 70px;
-        overflow: hidden;
-    }
-
-    .cal-day:hover {
-        background: #f1f5f9;
-        border-color: #94a3b8;
-        transform: translateY(-1px);
-    }
-
-    .cal-day.other-month {
-        opacity: .35;
-    }
-
-    .cal-day.today {
-        border-color: #2563eb;
-        border-width: 2px;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
-    }
-
-    .cal-day.selected {
-        background: #eff6ff;
-        border-color: #2563eb;
-    }
-
-    .cal-day-num {
-        font-size: .95rem;
-        font-weight: 600;
-        color: #0f172a;
-    }
-
-    .cal-day.other-month .cal-day-num {
-        color: #94a3b8;
-    }
-
-    .cal-day.today .cal-day-num {
-        color: #2563eb;
-    }
-
-    .cal-day-dots {
-        display: flex;
-        gap: 3px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        align-items: flex-end;
-    }
-
-    .cal-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .cal-day-preview {
-        font-size: .7rem;
-        color: #475569;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-top: 2px;
-        line-height: 1.2;
-    }
-
-    .cal-month-btn {
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: .5rem;
-        width: 36px;
-        height: 36px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 1rem;
-        transition: all .15s ease;
-    }
-
-    .cal-month-btn:hover {
-        background: #e2e8f0;
-    }
-
-    .cal-note-item {
-        border: 1px solid #e2e8f0;
-        border-radius: .75rem;
-        padding: .75rem;
-        background: #f8fafc;
-        margin-bottom: .5rem;
-    }
-
-    .cal-color-swatch {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: all .15s ease;
-    }
-
-    .cal-color-swatch:hover {
-        transform: scale(1.1);
-    }
-
-    .cal-color-swatch.active {
-        border-color: #0f172a;
-        box-shadow: 0 0 0 2px white, 0 0 0 4px #0f172a;
-    }
-
-    .dark .cal-color-swatch.active {
-        border-color: #e2e8f0;
-        box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px #e2e8f0;
-    }
-
-    @media (max-width: 640px) {
-        .cal-day {
-            min-height: 50px;
-            padding: .25rem;
-        }
-        .cal-day-num {
-            font-size: .8rem;
-        }
-        .cal-day-preview {
-            display: none;
-        }
-    }
-
-    .pomodoro-timer {
-        display: inline-flex;
-        align-items: center;
-        gap: .5rem;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: .75rem;
-        padding: .4rem .75rem;
-        font-size: .9rem;
-        font-weight: 600;
-    }
-
-    .dark .pomodoro-timer {
-        background: #334155;
-        border-color: #475569;
-    }
-
-    .pomodoro-timer.work {
-        background: #fef2f2;
-        border-color: #fca5a5;
-        color: #dc2626;
-    }
-
-    .pomodoro-timer.break {
-        background: #f0fdf4;
-        border-color: #86efac;
-        color: #16a34a;
-    }
-
-    .dark .pomodoro-timer.work {
-        background: #7f1d1d;
-        border-color: #dc2626;
-        color: #fecaca;
-    }
-
-    .dark .pomodoro-timer.break {
-        background: #14532d;
-        border-color: #16a34a;
-        color: #bbf7d0;
-    }
-
-    .pomodoro-btn {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: .25rem;
-        font-size: 1rem;
-        opacity: 0.7;
-        transition: opacity .15s;
-    }
-
-    .pomodoro-btn:hover {
-        opacity: 1;
-    }
-
-    .search-panel {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-        padding: .75rem;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: .75rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .search-input {
-        flex: 1;
-        min-width: 200px;
-        padding: .5rem .75rem;
-        border: 1px solid #cbd5e1;
-        border-radius: .5rem;
-        font-size: .9rem;
-    }
-
-    .search-btn {
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: .5rem;
-        padding: .5rem .75rem;
-        cursor: pointer;
-        font-size: .9rem;
-        transition: all .15s ease;
-    }
-
-    .search-btn:hover {
-        background: #e2e8f0;
-    }
-
-    .search-counter {
-        font-size: .85rem;
-        color: #64748b;
-        min-width: 80px;
-        text-align: center;
-    }
-
-    .search-highlight {
-        background: #fef08a;
-        color: #0f172a;
-        padding: 0 2px;
-        border-radius: 2px;
-    }
-
-    .search-highlight-active {
-        background: #f97316;
-        color: white;
-    }
+html,body{min-height:100%}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.material-card{transition:transform .15s ease,box-shadow .15s ease}
+.material-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.hidden{display:none!important}
+#viewer{position:relative;min-height:300px;overflow:hidden}
+#readerToolbar{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;padding:.5rem 0;margin-bottom:1rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+#readerContent{font-size:var(--reader-font-size,18px);line-height:1.7;overflow-wrap:anywhere;word-break:normal}
+#readerContent h1,#readerContent h2,#readerContent h3,#readerContent h4{line-height:1.3;margin-top:1.5em;margin-bottom:.7em}
+#readerContent p{margin-top:.8em;margin-bottom:.8em}
+#readerContent li{margin-top:.35em;margin-bottom:.35em}
+#readerContent img{max-width:100%;height:auto;display:block;margin:1rem auto}
+#readerContent table{width:100%;border-collapse:collapse;margin:1rem 0;display:block;overflow-x:auto}
+#readerContent th,#readerContent td{border:1px solid #cbd5e1;padding:.6rem;text-align:left;vertical-align:top}
+#readerContent pre{overflow-x:auto;padding:1rem;border-radius:.5rem;background:#f1f5f9;font-size:.9em;line-height:1.5}
+#readerContent code{overflow-wrap:anywhere}
+#viewer:fullscreen{width:100vw;height:100vh;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;padding:1.25rem;background:white;color:#0f172a}
+#viewer:fullscreen #readerContent{max-width:900px;margin:0 auto;padding-bottom:5rem}
+#viewer:fullscreen #readerToolbar{position:sticky;top:0;z-index:10;background:white;padding:.75rem 0}
+#viewer:fullscreen #fullscreenButton{display:none}
+.dark #readerToolbar{border-color:#334155}
+.dark #readerContent th,.dark #readerContent td{border-color:#475569}
+.dark #readerContent pre{background:#1e293b}
+.dark body{background:#0f172a;color:#e2e8f0}
+.dark .panel{background:#1e293b;border-color:#334155}
+.dark select,.dark input,.dark textarea{background:#0f172a;color:#e2e8f0;border-color:#475569}
+.dark .secondary{background:#334155;color:#e2e8f0}
+.dark #viewer:fullscreen{background:#0f172a;color:#e2e8f0}
+.dark #viewer:fullscreen #readerToolbar{background:#0f172a}
+.dark .cal-day{background:#1e293b;border-color:#334155;color:#e2e8f0}
+.dark .cal-day:hover{background:#334155}
+.dark .cal-day.other-month{color:#475569}
+.dark .cal-weekday{color:#94a3b8}
+.dark .cal-month-btn{background:#334155;color:#e2e8f0}
+.dark .cal-month-btn:hover{background:#475569}
+.dark .cal-note-item{background:#0f172a;border-color:#334155}
+.dark .search-panel{background:#1e293b;border-color:#334155}
+.dark .search-input{background:#0f172a;border-color:#475569;color:#e2e8f0}
+.dark .search-btn{background:#334155;border-color:#475569;color:#e2e8f0}
+.dark .search-btn:hover{background:#475569}
+.dark .search-counter{color:#94a3b8}
+.dark .search-highlight{background:#854d0e;color:#fef08a}
+.dark .search-highlight-active{background:#ea580c;color:white}
+.spinner{width:22px;height:22px;border:3px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+iframe.viewer-frame{width:100%;height:75vh;border:0}
+.font-size-label{min-width:52px;text-align:center;font-size:.85rem;color:#64748b}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-weekday{text-align:center;font-size:.75rem;font-weight:600;text-transform:uppercase;color:#64748b;padding:.5rem 0;letter-spacing:.05em}
+.cal-day{position:relative;aspect-ratio:1/1;border:1px solid #e2e8f0;border-radius:.75rem;padding:.4rem;cursor:pointer;background:white;transition:all .15s ease;display:flex;flex-direction:column;justify-content:space-between;min-height:70px;overflow:hidden}
+.cal-day:hover{background:#f1f5f9;border-color:#94a3b8;transform:translateY(-1px)}
+.cal-day.other-month{opacity:.35}
+.cal-day.today{border-color:#2563eb;border-width:2px;box-shadow:0 0 0 2px rgba(37,99,235,.15)}
+.cal-day.selected{background:#eff6ff;border-color:#2563eb}
+.cal-day-num{font-size:.95rem;font-weight:600;color:#0f172a}
+.cal-day.other-month .cal-day-num{color:#94a3b8}
+.cal-day.today .cal-day-num{color:#2563eb}
+.cal-day-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end}
+.cal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cal-day-preview{font-size:.7rem;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;line-height:1.2}
+.cal-month-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:.5rem;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .15s ease}
+.cal-month-btn:hover{background:#e2e8f0}
+.cal-note-item{border:1px solid #e2e8f0;border-radius:.75rem;padding:.75rem;background:#f8fafc;margin-bottom:.5rem}
+.cal-color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s ease}
+.cal-color-swatch:hover{transform:scale(1.1)}
+.cal-color-swatch.active{border-color:#0f172a;box-shadow:0 0 0 2px white,0 0 0 4px #0f172a}
+.dark .cal-color-swatch.active{border-color:#e2e8f0;box-shadow:0 0 0 2px #1e293b,0 0 0 4px #e2e8f0}
+@media(max-width:640px){.cal-day{min-height:50px;padding:.25rem}.cal-day-num{font-size:.8rem}.cal-day-preview{display:none}}
+.pomodoro-timer{display:inline-flex;align-items:center;gap:.5rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:.75rem;padding:.4rem .75rem;font-size:.9rem;font-weight:600}
+.dark .pomodoro-timer{background:#334155;border-color:#475569}
+.pomodoro-timer.work{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
+.pomodoro-timer.break{background:#f0fdf4;border-color:#86efac;color:#16a34a}
+.dark .pomodoro-timer.work{background:#7f1d1d;border-color:#dc2626;color:#fecaca}
+.dark .pomodoro-timer.break{background:#14532d;border-color:#16a34a;color:#bbf7d0}
+.pomodoro-btn{background:transparent;border:none;cursor:pointer;padding:.25rem;font-size:1rem;opacity:.7;transition:opacity .15s}
+.pomodoro-btn:hover{opacity:1}
+.search-panel{display:flex;align-items:center;gap:.5rem;padding:.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.search-input{flex:1;min-width:200px;padding:.5rem .75rem;border:1px solid #cbd5e1;border-radius:.5rem;font-size:.9rem}
+.search-btn{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:.5rem;padding:.5rem .75rem;cursor:pointer;font-size:.9rem;transition:all .15s ease}
+.search-btn:hover{background:#e2e8f0}
+.search-counter{font-size:.85rem;color:#64748b;min-width:80px;text-align:center}
+.search-highlight{background:#fef08a;color:#0f172a;padding:0 2px;border-radius:2px}
+.search-highlight-active{background:#f97316;color:white}
 </style>
 </head>
-
 <body class="bg-slate-50 text-slate-900">
-
 <div class="max-w-6xl mx-auto px-4 py-4">
 
 <header class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-    <div class="flex items-center justify-between gap-3">
-
-        <div>
-            <h1 class="text-2xl font-bold">
-                📚 Учебный помощник
-            </h1>
-
-            <p class="text-sm text-slate-500 mt-1">
-                Учебные материалы и лекции
-            </p>
-        </div>
-
-        <div class="flex gap-2">
-
-            <button
-                id="themeButton"
-                onclick="toggleTheme()"
-                class="secondary bg-slate-100 px-3 py-2 rounded-xl"
-                title="Сменить тему">
-                🌙
-            </button>
-
-            <button
-                onclick="openAdmin()"
-                class="bg-slate-800 text-white px-3 py-2 rounded-xl">
-                ⚙️
-            </button>
-
-        </div>
-    </div>
+<div class="flex items-center justify-between gap-3">
+<div>
+<h1 class="text-2xl font-bold">📚 Учебный помощник</h1>
+<p class="text-sm text-slate-500 mt-1">Учебные материалы и лекции</p>
+</div>
+<div class="flex gap-2">
+<button id="themeButton" onclick="toggleTheme()" class="secondary bg-slate-100 px-3 py-2 rounded-xl" title="Сменить тему">🌙</button>
+<button onclick="openAdmin()" class="bg-slate-800 text-white px-3 py-2 rounded-xl">⚙️</button>
+</div>
+</div>
 </header>
 
 <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-    <div class="grid md:grid-cols-2 gap-3">
-
-        <div>
-            <label class="block text-sm font-medium mb-1">
-                Семестр
-            </label>
-
-            <select
-                id="semesterSelect"
-                class="w-full border border-slate-300 rounded-xl p-3"
-                onchange="semesterChanged()">
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium mb-1">
-                Предмет
-            </label>
-
-            <select
-                id="subjectSelect"
-                class="w-full border border-slate-300 rounded-xl p-3"
-                onchange="subjectChanged()">
-            </select>
-        </div>
-
-    </div>
-
-</section>
-
-<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-    <div class="flex items-center justify-between gap-3 mb-3">
-
-        <h2 class="text-xl font-bold">
-            📖 Материалы
-        </h2>
-
-        <button
-            onclick="refreshMaterials()"
-            class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
-            ↻ Обновить
-        </button>
-
-    </div>
-
-    <div
-        id="materialsList"
-        class="grid md:grid-cols-3 gap-3">
-    </div>
-
-</section>
-
-<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-    <div class="flex items-center justify-between mb-3">
-
-        <h2 class="text-xl font-bold">
-            👁 Просмотр
-        </h2>
-
-        <button
-            id="fullscreenButton"
-            onclick="toggleFullscreen()"
-            class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">
-            ⛶ На весь экран
-        </button>
-
-    </div>
-
-    <div id="viewer" style="position: relative;">
-
-    <div id="readerToolbar">
-<button
-    id="searchButton"
-    onclick="toggleSearch()"
-    title="Поиск по тексту"
-    style="
-        margin-right: auto;
-        opacity: 0.55;
-        border: none;
-        background: rgba(148,163,184,0.25);
-        border-radius: 50%;
-        width: 38px;
-        height: 38px;
-        font-size: 20px;
-        cursor: pointer;
-    ">
-    🔍
-</button>
-
-<div id="pomodoroTimer" class="pomodoro-timer hidden">
-    <span id="pomodoroTime">25:00</span>
-    <button class="pomodoro-btn" onclick="togglePomodoro()" title="Старт/Пауза">▶️</button>
-    <button class="pomodoro-btn" onclick="resetPomodoro()" title="Сброс">🔄</button>
+<div class="grid md:grid-cols-2 gap-3">
+<div>
+<label class="block text-sm font-medium mb-1">Семестр</label>
+<select id="semesterSelect" class="w-full border border-slate-300 rounded-xl p-3" onchange="semesterChanged()"></select>
 </div>
-<button
-    id="pomodoroToggle"
-    onclick="togglePomodoroPanel()"
-    class="secondary bg-slate-100 px-3 py-2 rounded-lg"
-    title="Таймер Pomodoro">
-    🍅
-</button>
-
-            <button
-                onclick="changeFontSize(-1)"
-                class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
-                title="Уменьшить текст">
-                A−
-            </button>
-
-            <span
-                id="fontSizeLabel"
-                class="font-size-label">
-                100%
-            </span>
-
-            <button
-                onclick="changeFontSize(1)"
-                class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold"
-                title="Увеличить текст">
-                A+
-            </button>
-
-        </div>
-
-        <div id="searchPanel" class="search-panel hidden">
-            <input
-                id="searchInput"
-                type="text"
-                placeholder="Найти в тексте..."
-                class="search-input"
-                oninput="performSearch()"
-                onkeydown="if(event.key==='Enter')searchNext()">
-
-            <button onclick="searchPrev()" class="search-btn" title="Предыдущее">◀</button>
-            <span id="searchCounter" class="search-counter">0 из 0</span>
-            <button onclick="searchNext()" class="search-btn" title="Следующее">▶</button>
-            <button onclick="clearSearch()" class="search-btn" title="Закрыть поиск">✕</button>
-        </div>
-
-        <div id="readerContent">
-
-            <div class="text-slate-500">
-                Выберите материал.
-            </div>
-
-        </div>
-
-    </div>
-
+<div>
+<label class="block text-sm font-medium mb-1">Предмет</label>
+<select id="subjectSelect" class="w-full border border-slate-300 rounded-xl p-3" onchange="subjectChanged()"></select>
+</div>
+</div>
 </section>
 
 <section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
-
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold">
-            📅 Календарь
-        </h2>
-
-        <div class="flex items-center gap-2">
-            <button
-                onclick="calJumpToday()"
-                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm"
-                title="Перейти к сегодняшнему дню">
-                Сегодня
-            </button>
-            <button
-                onclick="openAllNotes()"
-                class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm"
-                title="Все заметки">
-                📋 Все заметки
-            </button>
-        </div>
-    </div>
-
-    <div class="flex items-center justify-between mb-4">
-        <button class="cal-month-btn" onclick="calPrevMonth()" title="Предыдущий месяц">
-            ◀
-        </button>
-
-        <div class="flex items-center gap-2">
-            <select
-                id="calMonthSelect"
-                class="border border-slate-300 rounded-xl px-3 py-2 font-semibold"
-                onchange="calChangeMonth()">
-            </select>
-            <select
-                id="calYearSelect"
-                class="border border-slate-300 rounded-xl px-3 py-2 font-semibold"
-                onchange="calChangeMonth()">
-            </select>
-        </div>
-
-        <button class="cal-month-btn" onclick="calNextMonth()" title="Следующий месяц">
-            ▶
-        </button>
-    </div>
-
-    <div id="calGrid" class="cal-grid"></div>
-
-    <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-        <span class="font-medium">Метки:</span>
-        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#ef4444;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Экзамен</span>
-        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#f59e0b;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Дедлайн</span>
-        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#10b981;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Занятие</span>
-        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#3b82f6;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Важно</span>
-        <span class="flex items-center gap-1"><span class="cal-dot" style="background:#8b5cf6;width:10px;height:10px;border-radius:50%;display:inline-block;"></span> Другое</span>
-    </div>
-
+<div class="flex items-center justify-between gap-3 mb-3">
+<h2 class="text-xl font-bold">📖 Материалы</h2>
+<button onclick="refreshMaterials()" class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">↻ Обновить</button>
+</div>
+<div id="materialsList" class="grid md:grid-cols-3 gap-3"></div>
 </section>
 
-<section
-    id="noteModal"
-    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
-
-    <div class="max-w-xl mx-auto px-4 py-8">
-
-        <div class="panel bg-white rounded-2xl shadow-xl p-5">
-
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h2 class="text-xl font-bold" id="noteModalTitle">
-                        Заметка
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1" id="noteModalDate"></p>
-                </div>
-
-                <button
-                    onclick="closeNoteModal()"
-                    class="text-2xl leading-none px-2">
-                    ×
-                </button>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">
-                    Цвет метки
-                </label>
-                <div class="flex gap-2" id="colorPicker">
-                    <div class="cal-color-swatch" data-color="#ef4444" style="background:#ef4444;" onclick="pickColor(this)" title="Экзамен"></div>
-                    <div class="cal-color-swatch" data-color="#f59e0b" style="background:#f59e0b;" onclick="pickColor(this)" title="Дедлайн"></div>
-                    <div class="cal-color-swatch" data-color="#10b981" style="background:#10b981;" onclick="pickColor(this)" title="Занятие"></div>
-                    <div class="cal-color-swatch" data-color="#3b82f6" style="background:#3b82f6;" onclick="pickColor(this)" title="Важно"></div>
-                    <div class="cal-color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="pickColor(this)" title="Другое"></div>
-                    <div class="cal-color-swatch" data-color="" style="background:#e2e8f0;" onclick="pickColor(this)" title="Без метки"></div>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="block text-sm font-medium mb-1">
-                    Заголовок
-                </label>
-                <input
-                    id="noteTitleInput"
-                    type="text"
-                    placeholder="Например: Экзамен по ОК 7"
-                    class="w-full border border-slate-300 rounded-xl p-3">
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">
-                    Текст заметки
-                </label>
-                <textarea
-                    id="noteTextInput"
-                    rows="5"
-                    placeholder="Добавьте заметку..."
-                    class="w-full border border-slate-300 rounded-xl p-3 resize-y"></textarea>
-            </div>
-
-            <div class="flex gap-2 flex-wrap">
-                <button
-                    onclick="saveNote()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium">
-                    💾 Сохранить
-                </button>
-                <button
-                    id="deleteNoteBtn"
-                    onclick="deleteNote()"
-                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium hidden">
-                    🗑 Удалить
-                </button>
-                <button
-                    onclick="closeNoteModal()"
-                    class="secondary bg-slate-100 px-4 py-2 rounded-xl">
-                    Отмена
-                </button>
-            </div>
-
-        </div>
-
-    </div>
-
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-xl font-bold">👁 Просмотр</h2>
+<button id="fullscreenButton" onclick="toggleFullscreen()" class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">⛶ На весь экран</button>
+</div>
+<div id="viewer" style="position:relative;">
+<div id="readerToolbar">
+<button id="searchButton" onclick="toggleSearch()" title="Поиск по тексту" style="margin-right:auto;opacity:0.55;border:none;background:rgba(148,163,184,0.25);border-radius:50%;width:38px;height:38px;font-size:20px;cursor:pointer">🔍</button>
+<div id="pomodoroTimer" class="pomodoro-timer hidden">
+<span id="pomodoroTime">25:00</span>
+<button class="pomodoro-btn" onclick="togglePomodoro()" title="Старт/Пауза">▶️</button>
+<button class="pomodoro-btn" onclick="resetPomodoro()" title="Сброс">🔄</button>
+</div>
+<button id="pomodoroToggle" onclick="togglePomodoroPanel()" class="secondary bg-slate-100 px-3 py-2 rounded-lg" title="Таймер Pomodoro">🍅</button>
+<button onclick="changeFontSize(-1)" class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold" title="Уменьшить текст">A−</button>
+<span id="fontSizeLabel" class="font-size-label">100%</span>
+<button onclick="changeFontSize(1)" class="secondary bg-slate-100 px-3 py-2 rounded-lg font-bold" title="Увеличить текст">A+</button>
+</div>
+<div id="searchPanel" class="search-panel hidden">
+<input id="searchInput" type="text" placeholder="Найти в тексте..." class="search-input" oninput="performSearch()" onkeydown="if(event.key==='Enter')searchNext()">
+<button onclick="searchPrev()" class="search-btn" title="Предыдущее">◀</button>
+<span id="searchCounter" class="search-counter">0 из 0</span>
+<button onclick="searchNext()" class="search-btn" title="Следующее">▶</button>
+<button onclick="clearSearch()" class="search-btn" title="Закрыть поиск">✕</button>
+</div>
+<div id="readerContent">
+<div class="text-slate-500">Выберите материал.</div>
+</div>
+</div>
 </section>
 
-<section
-    id="allNotesModal"
-    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
-
-    <div class="max-w-2xl mx-auto px-4 py-8">
-
-        <div class="panel bg-white rounded-2xl shadow-xl p-5">
-
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">
-                    📋 Все заметки
-                </h2>
-                <button
-                    onclick="closeAllNotes()"
-                    class="text-2xl leading-none px-2">
-                    ×
-                </button>
-            </div>
-
-            <div class="mb-3">
-                <input
-                    id="notesSearchInput"
-                    type="text"
-                    placeholder="Поиск по заметкам..."
-                    class="w-full border border-slate-300 rounded-xl p-3"
-                    oninput="renderAllNotes()">
-            </div>
-
-            <div id="allNotesList" class="max-h-[60vh] overflow-y-auto"></div>
-
-        </div>
-
-    </div>
-
+<section class="panel bg-white border border-slate-200 rounded-2xl shadow-sm p-4 mb-4">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xl font-bold">📅 Календарь</h2>
+<div class="flex items-center gap-2">
+<button onclick="calJumpToday()" class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">Сегодня</button>
+<button onclick="openAllNotes()" class="secondary bg-slate-100 px-3 py-2 rounded-xl text-sm">📋 Все заметки</button>
+</div>
+</div>
+<div class="flex items-center justify-between mb-4">
+<button class="cal-month-btn" onclick="calPrevMonth()">◀</button>
+<div class="flex items-center gap-2">
+<select id="calMonthSelect" class="border border-slate-300 rounded-xl px-3 py-2 font-semibold" onchange="calChangeMonth()"></select>
+<select id="calYearSelect" class="border border-slate-300 rounded-xl px-3 py-2 font-semibold" onchange="calChangeMonth()"></select>
+</div>
+<button class="cal-month-btn" onclick="calNextMonth()">▶</button>
+</div>
+<div id="calGrid" class="cal-grid"></div>
+<div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+<span class="font-medium">Метки:</span>
+<span class="flex items-center gap-1"><span class="cal-dot" style="background:#ef4444;width:10px;height:10px;border-radius:50%;display:inline-block"></span> Экзамен</span>
+<span class="flex items-center gap-1"><span class="cal-dot" style="background:#f59e0b;width:10px;height:10px;border-radius:50%;display:inline-block"></span> Дедлайн</span>
+<span class="flex items-center gap-1"><span class="cal-dot" style="background:#10b981;width:10px;height:10px;border-radius:50%;display:inline-block"></span> Занятие</span>
+<span class="flex items-center gap-1"><span class="cal-dot" style="background:#3b82f6;width:10px;height:10px;border-radius:50%;display:inline-block"></span> Важно</span>
+<span class="flex items-center gap-1"><span class="cal-dot" style="background:#8b5cf6;width:10px;height:10px;border-radius:50%;display:inline-block"></span> Другое</span>
+</div>
 </section>
 
-<section
-    id="adminPanel"
-    class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+<section id="noteModal" class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+<div class="max-w-xl mx-auto px-4 py-8">
+<div class="panel bg-white rounded-2xl shadow-xl p-5">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="text-xl font-bold" id="noteModalTitle">Заметка</h2>
+<p class="text-sm text-slate-500 mt-1" id="noteModalDate"></p>
+</div>
+<button onclick="closeNoteModal()" class="text-2xl leading-none px-2">×</button>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-2">Цвет метки</label>
+<div class="flex gap-2" id="colorPicker">
+<div class="cal-color-swatch" data-color="#ef4444" style="background:#ef4444" onclick="pickColor(this)" title="Экзамен"></div>
+<div class="cal-color-swatch" data-color="#f59e0b" style="background:#f59e0b" onclick="pickColor(this)" title="Дедлайн"></div>
+<div class="cal-color-swatch" data-color="#10b981" style="background:#10b981" onclick="pickColor(this)" title="Занятие"></div>
+<div class="cal-color-swatch" data-color="#3b82f6" style="background:#3b82f6" onclick="pickColor(this)" title="Важно"></div>
+<div class="cal-color-swatch" data-color="#8b5cf6" style="background:#8b5cf6" onclick="pickColor(this)" title="Другое"></div>
+<div class="cal-color-swatch" data-color="" style="background:#e2e8f0" onclick="pickColor(this)" title="Без метки"></div>
+</div>
+</div>
+<div class="mb-3">
+<label class="block text-sm font-medium mb-1">Заголовок</label>
+<input id="noteTitleInput" type="text" placeholder="Например: Экзамен по ОК 7" class="w-full border border-slate-300 rounded-xl p-3">
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium mb-1">Текст заметки</label>
+<textarea id="noteTextInput" rows="5" placeholder="Добавьте заметку..." class="w-full border border-slate-300 rounded-xl p-3 resize-y"></textarea>
+</div>
+<div class="flex gap-2 flex-wrap">
+<button onclick="saveNote()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium">💾 Сохранить</button>
+<button id="deleteNoteBtn" onclick="deleteNote()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium hidden">🗑 Удалить</button>
+<button onclick="closeNoteModal()" class="secondary bg-slate-100 px-4 py-2 rounded-xl">Отмена</button>
+</div>
+</div>
+</div>
+</section>
 
-    <div class="max-w-2xl mx-auto px-4 py-8">
+<section id="allNotesModal" class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+<div class="max-w-2xl mx-auto px-4 py-8">
+<div class="panel bg-white rounded-2xl shadow-xl p-5">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-bold">📋 Все заметки</h2>
+<button onclick="closeAllNotes()" class="text-2xl leading-none px-2">×</button>
+</div>
+<div class="mb-3">
+<input id="notesSearchInput" type="text" placeholder="Поиск по заметкам..." class="w-full border border-slate-300 rounded-xl p-3" oninput="renderAllNotes()">
+</div>
+<div id="allNotesList" class="max-h-[60vh] overflow-y-auto"></div>
+</div>
+</div>
+</section>
 
-        <div class="panel bg-white rounded-2xl shadow-xl p-5">
-
-            <div class="flex justify-between items-center mb-5">
-
-                <div>
-                    <h2 class="text-2xl font-bold">
-                        ⚙️ Управление материалами
-                    </h2>
-
-                    <p class="text-sm text-slate-500 mt-1">
-                        Загрузка файлов непосредственно в GitHub
-                    </p>
-                </div>
-
-                <button
-                    onclick="closeAdmin()"
-                    class="text-2xl">
-                    ×
-                </button>
-
-            </div>
-
-            <div id="loginBlock">
-
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-900">
-
-                    <strong>Важно.</strong>
-
-                    Для загрузки файлов нужен GitHub Fine-grained token
-                    с доступом к этому репозиторию и правом
-                    <strong>Contents: Read and write</strong>.
-
-                    Токен сохраняется в браузере.
-
-                </div>
-
-                <label class="block text-sm font-medium mb-1">
-                    GitHub-токен
-                </label>
-
-                <input
-                    id="githubToken"
-                    type="password"
-                    autocomplete="off"
-                    placeholder="github_pat_..."
-                    class="w-full border border-slate-300 rounded-xl p-3 mb-3">
-
-                <button
-                    onclick="loginGitHub()"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-3 font-medium">
-                    Войти
-                </button>
-
-                <div id="loginStatus" class="mt-3 text-sm"></div>
-
-            </div>
-
-            <div id="adminContent" class="hidden">
-
-                <div class="flex justify-between items-center mb-4">
-
-                    <div>
-
-                        <div class="font-medium">
-                            Администратор
-                        </div>
-
-                        <div
-                            id="githubUser"
-                            class="text-sm text-slate-500">
-                        </div>
-
-                    </div>
-
-                    <button
-                        onclick="logoutGitHub()"
-                        class="text-sm text-red-600">
-                        Выйти
-                    </button>
-
-                </div>
-
-                <div class="grid gap-3 mb-4">
-
-                    <div>
-
-                        <label class="block text-sm font-medium mb-1">
-                            Предмет
-                        </label>
-
-                        <select
-                            id="adminSubject"
-                            class="w-full border border-slate-300 rounded-xl p-3"
-                            onchange="adminSubjectChanged()">
-                        </select>
-
-                    </div>
-
-                    <div>
-
-                        <label class="block text-sm font-medium mb-1">
-                            Тема
-                        </label>
-
-                        <select
-                            id="adminTopic"
-                            class="w-full border border-slate-300 rounded-xl p-3">
-                        </select>
-
-                    </div>
-
-                </div>
-
-                <div class="border border-slate-200 rounded-xl p-4 mb-4">
-
-                    <h3 class="font-bold mb-3">
-                        ➕ Добавить материал
-                    </h3>
-
-                    <label class="block text-sm font-medium mb-1">
-                        Название материала
-                    </label>
-
-                    <input
-                        id="uploadTitle"
-                        type="text"
-                        placeholder="Например: Лекция 1"
-                        class="w-full border border-slate-300 rounded-xl p-3 mb-3">
-
-                    <label class="block text-sm font-medium mb-1">
-                        Файл
-                    </label>
-
-                    <input
-                        id="uploadFile"
-                        type="file"
-                        accept=".md,.markdown,.pdf,.docx,.html,.htm,text/html"
-                        class="w-full border border-slate-300 rounded-xl p-3 mb-3">
-
-                    <button
-                        onclick="uploadMaterial()"
-                        class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl p-3 font-medium">
-                        ⬆️ Загрузить материал
-                    </button>
-
-                    <div
-                        id="uploadStatus"
-                        class="mt-3 text-sm">
-                    </div>
-
-                </div>
-
-                <div>
-
-                    <h3 class="font-bold mb-3">
-                        📂 Файлы выбранной темы
-                    </h3>
-
-                    <div id="adminFiles"></div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
+<section id="adminPanel" class="hidden fixed inset-0 bg-black/60 z-50 overflow-y-auto">
+<div class="max-w-2xl mx-auto px-4 py-8">
+<div class="panel bg-white rounded-2xl shadow-xl p-5">
+<div class="flex justify-between items-center mb-5">
+<div>
+<h2 class="text-2xl font-bold">⚙️ Управление материалами</h2>
+<p class="text-sm text-slate-500 mt-1">Загрузка файлов непосредственно в GitHub</p>
+</div>
+<button onclick="closeAdmin()" class="text-2xl">×</button>
+</div>
+<div id="loginBlock">
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-900">
+<strong>Важно.</strong> Для загрузки файлов нужен GitHub Fine-grained token с доступом к этому репозиторию и правом <strong>Contents: Read and write</strong>. Токен сохраняется в браузере.
+</div>
+<label class="block text-sm font-medium mb-1">GitHub-токен</label>
+<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..." class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+<button onclick="loginGitHub()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-3 font-medium">Войти</button>
+<div id="loginStatus" class="mt-3 text-sm"></div>
+</div>
+<div id="adminContent" class="hidden">
+<div class="flex justify-between items-center mb-4">
+<div>
+<div class="font-medium">Администратор</div>
+<div id="githubUser" class="text-sm text-slate-500"></div>
+</div>
+<button onclick="logoutGitHub()" class="text-sm text-red-600">Выйти</button>
+</div>
+<div class="grid gap-3 mb-4">
+<div>
+<label class="block text-sm font-medium mb-1">Предмет</label>
+<select id="adminSubject" class="w-full border border-slate-300 rounded-xl p-3" onchange="adminSubjectChanged()"></select>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Тема</label>
+<select id="adminTopic" class="w-full border border-slate-300 rounded-xl p-3"></select>
+</div>
+</div>
+<div class="border border-slate-200 rounded-xl p-4 mb-4">
+<h3 class="font-bold mb-3">➕ Добавить материал</h3>
+<label class="block text-sm font-medium mb-1">Название материала</label>
+<input id="uploadTitle" type="text" placeholder="Например: Лекция 1" class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+<label class="block text-sm font-medium mb-1">Файл</label>
+<input id="uploadFile" type="file" accept=".md,.markdown,.pdf,.docx,.html,.htm,text/html" class="w-full border border-slate-300 rounded-xl p-3 mb-3">
+<button onclick="uploadMaterial()" class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl p-3 font-medium">⬆️ Загрузить материал</button>
+<div id="uploadStatus" class="mt-3 text-sm"></div>
+</div>
+<div>
+<h3 class="font-bold mb-3">📂 Файлы выбранной темы</h3>
+<div id="adminFiles"></div>
+</div>
+</div>
+</div>
+</div>
 </section>
 
 </div>
 
 <script>
+const GITHUB_OWNER="glushich1972-maker";
+const GITHUB_REPO="study-v2";
+const GITHUB_BRANCH="main";
+const GITHUB_API=`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
+const PAGES_BASE=`https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/`;
 
-const GITHUB_OWNER = "glushich1972-maker";
-const GITHUB_REPO = "study-v2";
-const GITHUB_BRANCH = "main";
-
-const GITHUB_API =
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents`;
-
-const PAGES_BASE =
-    `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/`;
-
-const STUDY_DATA = {
-
-    semester1: {
-
-        title: "1 семестр",
-
-        subjects: {
-
-            OK7: {
-
-                title:
-                    "ОК 7 — Правове регулювання надання психологічної допомоги",
-
-                topics: [
-
-                    {
-                        id: "topic1",
-                        title:
-                            "Тема 1. Загальні питання правового регулювання охорони здоров'я в Україні",
-                        path: "materials/OK7/topic1"
-                    },
-
-                    {
-                        id: "topic2",
-                        title:
-                            "Тема 2. Міжнародні та регіональні стандарти у сфері ментального здоров'я та психологічної діяльності",
-                        path: "materials/OK7/topic2"
-                    },
-
-                    {
-                        id: "topic3",
-                        title:
-                            "Тема 3. Правове регулювання діяльності психолога в системі освіти",
-                        path: "materials/OK7/topic3"
-                    },
-
-                    {
-                        id: "topic4",
-                        title:
-                            "Тема 4. Правове регулювання психологічної допомоги при захисті прав членів родини",
-                        path: "materials/OK7/topic4"
-                    },
-
-                    {
-                        id: "topic5",
-                        title:
-                            "Тема 5. Правове забезпечення діяльності психолога у розв'язанні проблем соціально уразливих категорій населення",
-                        path: "materials/OK7/topic5"
-                    },
-
-                    {
-                        id: "topic6",
-                        title:
-                            "Тема 6. Юридична відповідальність психолога за професійні правопорушення",
-                        path: "materials/OK7/topic6"
-                    }
-
-                ]
-            }
-
-        }
-    },
-
-    semester2: {
-
-        title: "2 семестр",
-
-        subjects: {}
-
-    }
-
+const STUDY_DATA={
+semester1:{
+title:"1 семестр",
+subjects:{
+OK7:{
+title:"ОК 7 — Правове регулювання надання психологічної допомоги",
+topics:[
+{id:"topic1",title:"Тема 1. Загальні питання правового регулювання охорони здоров'я в Україні",path:"materials/OK7/topic1"},
+{id:"topic2",title:"Тема 2. Міжнародні та регіональні стандарти у сфері ментального здоров'я та психологічної діяльності",path:"materials/OK7/topic2"},
+{id:"topic3",title:"Тема 3. Правове регулювання діяльності психолога в системі освіти",path:"materials/OK7/topic3"},
+{id:"topic4",title:"Тема 4. Правове регулювання психологічної допомоги при захисті прав членів родини",path:"materials/OK7/topic4"},
+{id:"topic5",title:"Тема 5. Правове забезпечення діяльності психолога у розв'язанні проблем соціально уразливих категорій населення",path:"materials/OK7/topic5"},
+{id:"topic6",title:"Тема 6. Юридична відповідальність психолога за професійні правопорушення",path:"materials/OK7/topic6"}
+]
+}
+}
+},
+semester2:{title:"2 семестр",subjects:{}}
 };
 
-let currentSemester = "semester1";
-let currentSubject = "OK7";
-let currentFontSize = 18;
+let currentSemester="semester1";
+let currentSubject="OK7";
+let currentFontSize=18;
+let calViewDate=new Date();
+let calSelectedDate=null;
+let calNotes={};
+const CAL_MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const CAL_WEEKDAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 
-let calViewDate = new Date();
-let calSelectedDate = null;
-let calNotes = {};
+function loadCalNotes(){try{const r=localStorage.getItem("calendarNotes");if(r)calNotes=JSON.parse(r)}catch(e){calNotes={}}}
+function saveCalNotes(){localStorage.setItem("calendarNotes",JSON.stringify(calNotes))}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function formatDateLong(d){const wd=["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"][d.getDay()];return `${d.getDate()} ${CAL_MONTHS[d.getMonth()].toLowerCase()} ${d.getFullYear()}, ${wd}`}
 
-const CAL_MONTHS = [
-    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-];
-
-const CAL_WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-
-function loadCalNotes() {
-    try {
-        const raw = localStorage.getItem("calendarNotes");
-        if (raw) calNotes = JSON.parse(raw);
-    } catch (e) {
-        calNotes = {};
-    }
+function renderCalendar(){
+const grid=document.getElementById("calGrid");if(!grid)return;
+const y=calViewDate.getFullYear(),m=calViewDate.getMonth();
+const ms=document.getElementById("calMonthSelect"),ys=document.getElementById("calYearSelect");
+if(ms&&ms.options.length===0){CAL_MONTHS.forEach((n,i)=>{const o=document.createElement("option");o.value=i;o.textContent=n;ms.appendChild(o)})}
+if(ms)ms.value=m;
+if(ys&&ys.options.length===0){const cy=new Date().getFullYear();for(let i=cy-5;i<=cy+5;i++){const o=document.createElement("option");o.value=i;o.textContent=i;ys.appendChild(o)}}
+if(ys)ys.value=y;
+let h="";CAL_WEEKDAYS.forEach(w=>{h+=`<div class="cal-weekday">${w}</div>`});
+const fd=new Date(y,m,1);let so=fd.getDay()-1;if(so<0)so=6;
+const dim=new Date(y,m+1,0).getDate(),dipm=new Date(y,m,0).getDate();
+const today=new Date();
+for(let i=so-1;i>=0;i--){h+=renderDayCell(new Date(y,m-1,dipm-i),true,today)}
+for(let d=1;d<=dim;d++){h+=renderDayCell(new Date(y,m,d),false,today)}
+const tc=so+dim,rem=(7-(tc%7))%7;
+for(let d=1;d<=rem;d++){h+=renderDayCell(new Date(y,m+1,d),true,today)}
+grid.innerHTML=h;
+grid.querySelectorAll(".cal-day").forEach(c=>{c.addEventListener("click",()=>{const p=c.dataset.date.split("-");calSelectedDate=new Date(+p[0],+p[1]-1,+p[2]);openNoteModal(calSelectedDate)})});
 }
 
-function saveCalNotes() {
-    localStorage.setItem("calendarNotes", JSON.stringify(calNotes));
+function renderDayCell(d,om,today){
+const k=dateKey(d),n=calNotes[k],it=isSameDay(d,today),is=calSelectedDate&&isSameDay(d,calSelectedDate);
+let c="cal-day";if(om)c+=" other-month";if(it)c+=" today";if(is)c+=" selected";
+let dh="",ph="";
+if(n&&n.color)dh=`<div class="cal-day-dots"><span class="cal-dot" style="background:${escapeHtml(n.color)}"></span></div>`;
+else if(n)dh=`<div class="cal-day-dots"><span class="cal-dot" style="background:#94a3b8"></span></div>`;
+if(n&&n.title)ph=`<div class="cal-day-preview" title="${escapeHtml(n.title)}">${escapeHtml(n.title)}</div>`;
+return `<div class="${c}" data-date="${k}"><div class="cal-day-num">${d.getDate()}</div>${ph}${dh}</div>`;
 }
 
-function dateKey(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+function calPrevMonth(){calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()-1,1);renderCalendar()}
+function calNextMonth(){calViewDate=new Date(calViewDate.getFullYear(),calViewDate.getMonth()+1,1);renderCalendar()}
+function calChangeMonth(){calViewDate=new Date(+document.getElementById("calYearSelect").value,+document.getElementById("calMonthSelect").value,1);renderCalendar()}
+function calJumpToday(){const t=new Date();calViewDate=new Date(t.getFullYear(),t.getMonth(),1);calSelectedDate=t;renderCalendar();document.getElementById("calGrid").scrollIntoView({behavior:"smooth",block:"center"})}
+
+let currentNoteColor="";
+function openNoteModal(d){
+const m=document.getElementById("noteModal");m.classList.remove("hidden");
+document.getElementById("noteModalTitle").textContent="Заметка";
+document.getElementById("noteModalDate").textContent=formatDateLong(d);
+const k=dateKey(d),n=calNotes[k];
+document.getElementById("noteTitleInput").value=n?.title||"";
+document.getElementById("noteTextInput").value=n?.text||"";
+currentNoteColor=n?.color||"";
+const db=document.getElementById("deleteNoteBtn");
+if(n)db.classList.remove("hidden");else db.classList.add("hidden");
+updateColorPicker();document.getElementById("noteTitleInput").focus();
 }
-
-function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-           a.getMonth() === b.getMonth() &&
-           a.getDate() === b.getDate();
+function closeNoteModal(){document.getElementById("noteModal").classList.add("hidden")}
+function pickColor(el){currentNoteColor=el.dataset.color||"";updateColorPicker()}
+function updateColorPicker(){document.querySelectorAll("#colorPicker .cal-color-swatch").forEach(s=>{if((s.dataset.color||"")===currentNoteColor)s.classList.add("active");else s.classList.remove("active")})}
+function saveNote(){
+if(!calSelectedDate)return;
+const t=document.getElementById("noteTitleInput").value.trim(),tx=document.getElementById("noteTextInput").value.trim();
+if(!t&&!tx&&!currentNoteColor){const k=dateKey(calSelectedDate);if(calNotes[k]){delete calNotes[k];saveCalNotes();renderCalendar()}closeNoteModal();return}
+const k=dateKey(calSelectedDate);
+calNotes[k]={title:t,text:tx,color:currentNoteColor,created:calNotes[k]?.created||Date.now(),updated:Date.now()};
+saveCalNotes();renderCalendar();closeNoteModal();
 }
-
-function formatDateLong(date) {
-    const d = date.getDate();
-    const m = CAL_MONTHS[date.getMonth()].toLowerCase();
-    const y = date.getFullYear();
-    const wd = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"][date.getDay()];
-    return `${d} ${m} ${y}, ${wd}`;
+function deleteNote(){if(!calSelectedDate||!confirm("Удалить заметку?"))return;delete calNotes[dateKey(calSelectedDate)];saveCalNotes();renderCalendar();closeNoteModal()}
+function openAllNotes(){document.getElementById("allNotesModal").classList.remove("hidden");document.getElementById("notesSearchInput").value="";renderAllNotes()}
+function closeAllNotes(){document.getElementById("allNotesModal").classList.add("hidden")}
+function renderAllNotes(){
+const c=document.getElementById("allNotesList"),q=(document.getElementById("notesSearchInput")?.value||"").toLowerCase().trim();
+const e=Object.entries(calNotes).filter(([k,n])=>!q||(n.title||"").toLowerCase().includes(q)||(n.text||"").toLowerCase().includes(q)||k.includes(q)).sort((a,b)=>b[0].localeCompare(a[0]));
+if(!e.length){c.innerHTML=`<div class="text-slate-500 text-center py-8">${q?"Ничего не найдено.":"Заметок пока нет."}</div>`;return}
+c.innerHTML=e.map(([k,n])=>{const p=k.split("-"),d=new Date(+p[0],+p[1]-1,+p[2]);const cd=n.color?`<span class="cal-dot" style="background:${escapeHtml(n.color)};width:12px;height:12px;border-radius:50%;display:inline-block"></span>`:"";
+return `<div class="cal-note-item"><div class="flex items-start justify-between gap-2 mb-1"><div class="flex items-center gap-2 min-w-0">${cd}<span class="font-semibold">${escapeHtml(formatDateLong(d))}</span></div><div class="flex gap-1 shrink-0"><button onclick="editNoteFromList('${k}')" class="text-blue-600 px-2 py-1 rounded-lg text-sm">✏️</button><button onclick="deleteNoteFromList('${k}')" class="text-red-600 px-2 py-1 rounded-lg text-sm">🗑</button></div></div>${n.title?`<div class="font-medium mb-1">${escapeHtml(n.title)}</div>`:""}${n.text?`<div class="text-sm text-slate-600 whitespace-pre-wrap break-words">${escapeHtml(n.text)}</div>`:""}</div>`}).join("");
 }
+function editNoteFromList(k){closeAllNotes();const p=k.split("-");calSelectedDate=new Date(+p[0],+p[1]-1,+p[2]);calViewDate=new Date(calSelectedDate.getFullYear(),calSelectedDate.getMonth(),1);renderCalendar();openNoteModal(calSelectedDate)}
+function deleteNoteFromList(k){if(!confirm("Удалить?"))return;delete calNotes[k];saveCalNotes();renderCalendar();renderAllNotes()}
 
-function renderCalendar() {
-    const grid = document.getElementById("calGrid");
-    if (!grid) return;
+let pomodoroState={isRunning:false,isWork:true,timeLeft:25*60,interval:null};
+const POMODORO_WORK=25*60,POMODORO_BREAK=5*60;
+function togglePomodoroPanel(){document.getElementById("pomodoroTimer").classList.toggle("hidden")}
+function togglePomodoro(){if(pomodoroState.isRunning)pausePomodoro();else startPomodoro()}
+function startPomodoro(){pomodoroState.isRunning=true;updatePomodoroButton();pomodoroState.interval=setInterval(()=>{pomodoroState.timeLeft--;if(pomodoroState.timeLeft<=0)completePomodoro();else updatePomodoroDisplay()},1000)}
+function pausePomodoro(){pomodoroState.isRunning=false;clearInterval(pomodoroState.interval);updatePomodoroButton()}
+function resetPomodoro(){pausePomodoro();pomodoroState.isWork=true;pomodoroState.timeLeft=POMODORO_WORK;updatePomodoroDisplay();updatePomodoroStyle()}
+function completePomodoro(){pausePomodoro();playNotificationSound();if(pomodoroState.isWork){pomodoroState.isWork=false;pomodoroState.timeLeft=POMODORO_BREAK;showNotification("Время отдыха!","5 минут перерыва")}else{pomodoroState.isWork=true;pomodoroState.timeLeft=POMODORO_WORK;showNotification("Перерыв окончен!","Время вернуться к работе")}updatePomodoroDisplay();updatePomodoroStyle()}
+function updatePomodoroDisplay(){const m=Math.floor(pomodoroState.timeLeft/60),s=pomodoroState.timeLeft%60;document.getElementById("pomodoroTime").textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+function updatePomodoroButton(){document.querySelector('#pomodoroTimer .pomodoro-btn').textContent=pomodoroState.isRunning?'⏸️':'▶️'}
+function updatePomodoroStyle(){const t=document.getElementById("pomodoroTimer");t.classList.remove("work","break");t.classList.add(pomodoroState.isWork?"work":"break")}
+function playNotificationSound(){const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(0.3,a.currentTime);g.gain.exponentialRampToValueAtTime(0.01,a.currentTime+0.5);o.start(a.currentTime);o.stop(a.currentTime+0.5)}
+function showNotification(t,b){if("Notification"in window&&Notification.permission==="granted")new Notification(t,{body:b});else alert(t+"\n"+b)}
 
-    const year = calViewDate.getFullYear();
-    const month = calViewDate.getMonth();
-
-    const monthSel = document.getElementById("calMonthSelect");
-    const yearSel = document.getElementById("calYearSelect");
-
-    if (monthSel && monthSel.options.length === 0) {
-        CAL_MONTHS.forEach((name, idx) => {
-            const opt = document.createElement("option");
-            opt.value = idx;
-            opt.textContent = name;
-            monthSel.appendChild(opt);
-        });
-    }
-    if (monthSel) monthSel.value = month;
-
-    if (yearSel && yearSel.options.length === 0) {
-        const currentYear = new Date().getFullYear();
-        for (let y = currentYear - 5; y <= currentYear + 5; y++) {
-            const opt = document.createElement("option");
-            opt.value = y;
-            opt.textContent = y;
-            yearSel.appendChild(opt);
-        }
-    }
-    if (yearSel) yearSel.value = year;
-
-    let html = "";
-    CAL_WEEKDAYS.forEach(wd => {
-        html += `<div class="cal-weekday">${wd}</div>`;
-    });
-
-    const firstDay = new Date(year, month, 1);
-    let startOffset = firstDay.getDay() - 1;
-    if (startOffset < 0) startOffset = 6;
-
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    const today = new Date();
-
-    for (let i = startOffset - 1; i >= 0; i--) {
-        const d = daysInPrevMonth - i;
-        const cellDate = new Date(year, month - 1, d);
-        html += renderDayCell(cellDate, true, today);
-    }
-
-    for (let d = 1; d <= daysInMonth; d++) {
-        const cellDate = new Date(year, month, d);
-        html += renderDayCell(cellDate, false, today);
-    }
-
-    const totalCells = startOffset + daysInMonth;
-    const remaining = (7 - (totalCells % 7)) % 7;
-    for (let d = 1; d <= remaining; d++) {
-        const cellDate = new Date(year, month + 1, d);
-        html += renderDayCell(cellDate, true, today);
-    }
-
-    grid.innerHTML = html;
-
-    grid.querySelectorAll(".cal-day").forEach(cell => {
-        cell.addEventListener("click", () => {
-            const key = cell.dataset.date;
-            const parts = key.split("-");
-            calSelectedDate = new Date(
-                parseInt(parts[0]),
-                parseInt(parts[1]) - 1,
-                parseInt(parts[2])
-            );
-            openNoteModal(calSelectedDate);
-        });
-    });
+let searchHighlights=[],currentHighlightIndex=-1,originalContent=null;
+function toggleSearch(){const p=document.getElementById("searchPanel");p.classList.toggle("hidden");if(!p.classList.contains("hidden"))document.getElementById("searchInput").focus();else clearSearch()}
+function performSearch(){
+const q=document.getElementById("searchInput").value.trim();if(!q){clearSearch();return}
+if(!originalContent)originalContent=document.getElementById("readerContent").innerHTML;
+else document.getElementById("readerContent").innerHTML=originalContent;
+searchHighlights=[];currentHighlightIndex=-1;highlightAllOccurrences(q);updateSearchCounter();
+if(searchHighlights.length>0){currentHighlightIndex=0;highlightCurrent()}
 }
-
-function renderDayCell(date, isOtherMonth, today) {
-    const key = dateKey(date);
-    const note = calNotes[key];
-    const isToday = isSameDay(date, today);
-    const isSelected = calSelectedDate && isSameDay(date, calSelectedDate);
-
-    let classes = "cal-day";
-    if (isOtherMonth) classes += " other-month";
-    if (isToday) classes += " today";
-    if (isSelected) classes += " selected";
-
-    let dotsHtml = "";
-    if (note && note.color) {
-        dotsHtml = `<div class="cal-day-dots"><span class="cal-dot" style="background:${escapeHtml(note.color)}"></span></div>`;
-    } else if (note) {
-        dotsHtml = `<div class="cal-day-dots"><span class="cal-dot" style="background:#94a3b8"></span></div>`;
-    }
-
-    let previewHtml = "";
-    if (note && note.title) {
-        previewHtml = `<div class="cal-day-preview" title="${escapeHtml(note.title)}">${escapeHtml(note.title)}</div>`;
-    }
-
-    return `
-        <div class="${classes}" data-date="${key}">
-            <div class="cal-day-num">${date.getDate()}</div>
-            ${previewHtml}
-            ${dotsHtml}
-        </div>
-    `;
+function highlightAllOccurrences(q){
+const c=document.getElementById("readerContent"),lq=q.toLowerCase();
+const w=document.createTreeWalker(c,NodeFilter.SHOW_TEXT,null,false);
+const tn=[];let n;while(n=w.nextNode())tn.push(n);
+tn.forEach(tn=>{const t=tn.nodeValue,lt=t.toLowerCase();let li=0,idx=lt.indexOf(lq,li);if(idx===-1)return;
+const f=document.createDocumentFragment();
+while(idx!==-1){if(idx>li)f.appendChild(document.createTextNode(t.substring(li,idx)));
+const s=document.createElement("span");s.className="search-highlight";s.textContent=t.substring(idx,idx+q.length);f.appendChild(s);searchHighlights.push(s);
+li=idx+q.length;idx=lt.indexOf(lq,li)}
+if(li<t.length)f.appendChild(document.createTextNode(t.substring(li)));
+tn.parentNode.replaceChild(f,tn)});
 }
+function highlightCurrent(){searchHighlights.forEach((s,i)=>{if(i===currentHighlightIndex){s.classList.add("search-highlight-active");s.scrollIntoView({behavior:"smooth",block:"center"})}else s.classList.remove("search-highlight-active")})}
+function searchNext(){if(!searchHighlights.length)return;currentHighlightIndex=(currentHighlightIndex+1)%searchHighlights.length;highlightCurrent();updateSearchCounter()}
+function searchPrev(){if(!searchHighlights.length)return;currentHighlightIndex=(currentHighlightIndex-1+searchHighlights.length)%searchHighlights.length;highlightCurrent();updateSearchCounter()}
+function updateSearchCounter(){const c=document.getElementById("searchCounter");c.textContent=searchHighlights.length===0?"0 из 0":`${currentHighlightIndex+1} из ${searchHighlights.length}`}
+function clearSearch(){if(originalContent){document.getElementById("readerContent").innerHTML=originalContent;originalContent=null}searchHighlights=[];currentHighlightIndex=-1;document.getElementById("searchInput").value="";document.getElementById("searchCounter").textContent="0 из 0";document.getElementById("searchPanel").classList.add("hidden")}
 
-function calPrevMonth() {
-    calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() - 1, 1);
-    renderCalendar();
-}
-
-function calNextMonth() {
-    calViewDate = new Date(calViewDate.getFullYear(), calViewDate.getMonth() + 1, 1);
-    renderCalendar();
-}
-
-function calChangeMonth() {
-    const month = parseInt(document.getElementById("calMonthSelect").value);
-    const year = parseInt(document.getElementById("calYearSelect").value);
-    calViewDate = new Date(year, month, 1);
-    renderCalendar();
-}
-
-function calJumpToday() {
-    const today = new Date();
-    calViewDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    calSelectedDate = today;
-    renderCalendar();
-    document.getElementById("calGrid").scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-let currentNoteColor = "";
-
-function openNoteModal(date) {
-    const modal = document.getElementById("noteModal");
-    modal.classList.remove("hidden");
-
-    document.getElementById("noteModalTitle").textContent = "Заметка";
-    document.getElementById("noteModalDate").textContent = formatDateLong(date);
-
-    const key = dateKey(date);
-    const note = calNotes[key];
-
-    document.getElementById("noteTitleInput").value = note?.title || "";
-    document.getElementById("noteTextInput").value = note?.text || "";
-    currentNoteColor = note?.color || "";
-
-    const delBtn = document.getElementById("deleteNoteBtn");
-    if (note) {
-        delBtn.classList.remove("hidden");
-    } else {
-        delBtn.classList.add("hidden");
-    }
-
-    updateColorPicker();
-
-    document.getElementById("noteTitleInput").focus();
-}
-
-function closeNoteModal() {
-    document.getElementById("noteModal").classList.add("hidden");
-}
-
-function pickColor(el) {
-    currentNoteColor = el.dataset.color || "";
-    updateColorPicker();
-}
-
-function updateColorPicker() {
-    document.querySelectorAll("#colorPicker .cal-color-swatch").forEach(sw => {
-        if ((sw.dataset.color || "") === currentNoteColor) {
-            sw.classList.add("active");
-        } else {
-            sw.classList.remove("active");
-        }
-    });
-}
-
-function saveNote() {
-    if (!calSelectedDate) return;
-
-    const title = document.getElementById("noteTitleInput").value.trim();
-    const text = document.getElementById("noteTextInput").value.trim();
-
-    if (!title && !text && !currentNoteColor) {
-        const key = dateKey(calSelectedDate);
-        if (calNotes[key]) {
-            delete calNotes[key];
-            saveCalNotes();
-            renderCalendar();
-        }
-        closeNoteModal();
-        return;
-    }
-
-    const key = dateKey(calSelectedDate);
-    calNotes[key] = {
-        title: title,
-        text: text,
-        color: currentNoteColor,
-        created: calNotes[key]?.created || Date.now(),
-        updated: Date.now()
-    };
-
-    saveCalNotes();
-    renderCalendar();
-    closeNoteModal();
-}
-
-function deleteNote() {
-    if (!calSelectedDate) return;
-    if (!confirm("Удалить заметку за эту дату?")) return;
-
-    const key = dateKey(calSelectedDate);
-    delete calNotes[key];
-    saveCalNotes();
-    renderCalendar();
-    closeNoteModal();
-}
-
-function openAllNotes() {
-    document.getElementById("allNotesModal").classList.remove("hidden");
-    document.getElementById("notesSearchInput").value = "";
-    renderAllNotes();
-}
-
-function closeAllNotes() {
-    document.getElementById("allNotesModal").classList.add("hidden");
-}
-
-function renderAllNotes() {
-    const container = document.getElementById("allNotesList");
-    const query = (document.getElementById("notesSearchInput")?.value || "").toLowerCase().trim();
-
-    const entries = Object.entries(calNotes)
-        .filter(([key, note]) => {
-            if (!query) return true;
-            return (note.title || "").toLowerCase().includes(query) ||
-                   (note.text || "").toLowerCase().includes(query) ||
-                   key.includes(query);
-        })
-        .sort((a, b) => b[0].localeCompare(a[0]));
-
-    if (!entries.length) {
-        container.innerHTML = `
-            <div class="text-slate-500 text-center py-8">
-                ${query ? "Ничего не найдено." : "Заметок пока нет. Кликайте по дням в календаре, чтобы добавить."}
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = entries.map(([key, note]) => {
-        const parts = key.split("-");
-        const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-        const colorDot = note.color
-            ? `<span class="cal-dot" style="background:${escapeHtml(note.color)};width:12px;height:12px;border-radius:50%;display:inline-block;"></span>`
-            : "";
-
-        return `
-            <div class="cal-note-item" data-key="${key}">
-                <div class="flex items-start justify-between gap-2 mb-1">
-                    <div class="flex items-center gap-2 min-w-0">
-                        ${colorDot}
-                        <span class="font-semibold">${escapeHtml(formatDateLong(date))}</span>
-                    </div>
-                    <div class="flex gap-1 shrink-0">
-                        <button onclick="editNoteFromList('${key}')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-lg text-sm" title="Редактировать">✏️</button>
-                        <button onclick="deleteNoteFromList('${key}')" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg text-sm" title="Удалить">🗑</button>
-                    </div>
-                </div>
-                ${note.title ? `<div class="font-medium mb-1">${escapeHtml(note.title)}</div>` : ""}
-                ${note.text ? `<div class="text-sm text-slate-600 whitespace-pre-wrap break-words">${escapeHtml(note.text)}</div>` : ""}
-            </div>
-        `;
-    }).join("");
-}
-
-function editNoteFromList(key) {
-    closeAllNotes();
-    const parts = key.split("-");
-    calSelectedDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    calViewDate = new Date(calSelectedDate.getFullYear(), calSelectedDate.getMonth(), 1);
-    renderCalendar();
-    openNoteModal(calSelectedDate);
-}
-
-function deleteNoteFromList(key) {
-    if (!confirm("Удалить эту заметку?")) return;
-    delete calNotes[key];
-    saveCalNotes();
-    renderCalendar();
-    renderAllNotes();
-}
-
-let pomodoroState = {
-    isRunning: false,
-    isWork: true,
-    timeLeft: 25 * 60,
-    interval: null
-};
-
-const POMODORO_WORK = 25 * 60;
-const POMODORO_BREAK = 5 * 60;
-
-function togglePomodoroPanel() {
-    const timer = document.getElementById("pomodoroTimer");
-    timer.classList.toggle("hidden");
-}
-
-function togglePomodoro() {
-    if (pomodoroState.isRunning) {
-        pausePomodoro();
-    } else {
-        startPomodoro();
-    }
-}
-
-function startPomodoro() {
-    pomodoroState.isRunning = true;
-    updatePomodoroButton();
-    
-    pomodoroState.interval = setInterval(() => {
-        pomodoroState.timeLeft--;
-        
-        if (pomodoroState.timeLeft <= 0) {
-            completePomodoro();
-        } else {
-            updatePomodoroDisplay();
-        }
-    }, 1000);
-}
-
-function pausePomodoro() {
-    pomodoroState.isRunning = false;
-    clearInterval(pomodoroState.interval);
-    updatePomodoroButton();
-}
-
-function resetPomodoro() {
-    pausePomodoro();
-    pomodoroState.isWork = true;
-    pomodoroState.timeLeft = POMODORO_WORK;
-    updatePomodoroDisplay();
-    updatePomodoroStyle();
-}
-
-function completePomodoro() {
-    pausePomodoro();
-    playNotificationSound();
-    
-    if (pomodoroState.isWork) {
-        pomodoroState.isWork = false;
-        pomodoroState.timeLeft = POMODORO_BREAK;
-        showNotification("Время отдыха!", "5 минут перерыва");
-    } else {
-        pomodoroState.isWork = true;
-        pomodoroState.timeLeft = POMODORO_WORK;
-        showNotification("Перерыв окончен!", "Время вернуться к работе");
-    }
-    
-    updatePomodoroDisplay();
-    updatePomodoroStyle();
-}
-
-function updatePomodoroDisplay() {
-    const minutes = Math.floor(pomodoroState.timeLeft / 60);
-    const seconds = pomodoroState.timeLeft % 60;
-    document.getElementById("pomodoroTime").textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function updatePomodoroButton() {
-    const btn = document.querySelector('#pomodoroTimer .pomodoro-btn');
-    btn.textContent = pomodoroState.isRunning ? '⏸️' : '▶️';
-}
-
-function updatePomodoroStyle() {
-    const timer = document.getElementById("pomodoroTimer");
-    timer.classList.remove("work", "break");
-    timer.classList.add(pomodoroState.isWork ? "work" : "break");
-}
-
-function playNotificationSound() {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-}
-
-function showNotification(title, body) {
-    if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(title, { body });
-    } else {
-        alert(`${title}\n${body}`);
-    }
-}
-
-let searchHighlights = [];
-let currentHighlightIndex = -1;
-let originalContent = null;
-
-function toggleSearch() {
-    const panel = document.getElementById("searchPanel");
-    panel.classList.toggle("hidden");
-    
-    if (!panel.classList.contains("hidden")) {
-        document.getElementById("searchInput").focus();
-    } else {
-        clearSearch();
-    }
-}
-
-function performSearch() {
-    const query = document.getElementById("searchInput").value.trim();
-    
-    if (!query) {
-        clearSearch();
-        return;
-    }
-    
-    if (!originalContent) {
-        originalContent = document.getElementById("readerContent").innerHTML;
-    } else {
-        document.getElementById("readerContent").innerHTML = originalContent;
-    }
-    
-    searchHighlights = [];
-    currentHighlightIndex = -1;
-    
-    highlightAllOccurrences(query);
-    
-    updateSearchCounter();
-    
-    if (searchHighlights.length > 0) {
-        currentHighlightIndex = 0;
-        highlightCurrent();
-    }
-}
-
-function highlightAllOccurrences(query) {
-    const content = document.getElementById("readerContent");
-    const lowerQuery = query.toLowerCase();
-    
-    const walker = document.createTreeWalker(
-        content,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-    );
-    
-    const textNodes = [];
-    let node;
-    while (node = walker.nextNode()) {
-        textNodes.push(node);
-    }
-    
-    textNodes.forEach(textNode => {
-        const text = textNode.nodeValue;
-        const lowerText = text.toLowerCase();
-        
-        let lastIndex = 0;
-        let index = lowerText.indexOf(lowerQuery, lastIndex);
-        
-        if (index === -1) return;
-        
-        const fragment = document.createDocumentFragment();
-        
-        while (index !== -1) {
-            if (index > lastIndex) {
-                fragment.appendChild(
-                    document.createTextNode(text.substring(lastIndex, index))
-                );
-            }
-            
-            const span = document.createElement("span");
-            span.className = "search-highlight";
-            span.textContent = text.substring(index, index + query.length);
-            fragment.appendChild(span);
-            
-            searchHighlights.push(span);
-            
-            lastIndex = index + query.length;
-            index = lowerText.indexOf(lowerQuery, lastIndex);
-        }
-        
-        if (lastIndex < text.length) {
-            fragment.appendChild(
-                document.createTextNode(text.substring(lastIndex))
-            );
-        }
-        
-        textNode.parentNode.replaceChild(fragment, textNode);
-    });
-}
-
-function highlightCurrent() {
-    searchHighlights.forEach((span, idx) => {
-        if (idx === currentHighlightIndex) {
-            span.classList.add("search-highlight-active");
-            span.scrollIntoView({ behavior: "smooth", block: "center" });
-        } else {
-            span.classList.remove("search-highlight-active");
-        }
-    });
-}
-
-function searchNext() {
-    if (searchHighlights.length === 0) return;
-    
-    currentHighlightIndex = (currentHighlightIndex + 1) % searchHighlights.length;
-    highlightCurrent();
-    updateSearchCounter();
-}
-
-function searchPrev() {
-    if (searchHighlights.length === 0) return;
-    
-    currentHighlightIndex = (currentHighlightIndex - 1 + searchHighlights.length) % searchHighlights.length;
-    highlightCurrent();
-    updateSearchCounter();
-}
-
-function updateSearchCounter() {
-    const counter = document.getElementById("searchCounter");
-    if (searchHighlights.length === 0) {
-        counter.textContent = "0 из 0";
-    } else {
-        counter.textContent = `${currentHighlightIndex + 1} из ${searchHighlights.length}`;
-    }
-}
-
-function clearSearch() {
-    if (originalContent) {
-        document.getElementById("readerContent").innerHTML = originalContent;
-        originalContent = null;
-    }
-    
-    searchHighlights = [];
-    currentHighlightIndex = -1;
-    
-    document.getElementById("searchInput").value = "";
-    document.getElementById("searchCounter").textContent = "0 из 0";
-    document.getElementById("searchPanel").classList.add("hidden");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    loadTheme();
-    loadFontSize();
-    populateSemesters();
-    semesterChanged();
-
-    loadCalNotes();
-    renderCalendar();
-
-    document.getElementById("noteModal").addEventListener("click", (e) => {
-        if (e.target.id === "noteModal") closeNoteModal();
-    });
-    document.getElementById("allNotesModal").addEventListener("click", (e) => {
-        if (e.target.id === "allNotesModal") closeAllNotes();
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            if (!document.getElementById("noteModal").classList.contains("hidden")) {
-                closeNoteModal();
-            } else if (!document.getElementById("allNotesModal").classList.contains("hidden")) {
-                closeAllNotes();
-            } else if (!document.getElementById("searchPanel").classList.contains("hidden")) {
-                clearSearch();
-            }
-        }
-    });
+document.addEventListener("DOMContentLoaded",()=>{
+loadTheme();loadFontSize();populateSemesters();semesterChanged();
+loadCalNotes();renderCalendar();
+document.getElementById("noteModal").addEventListener("click",e=>{if(e.target.id==="noteModal")closeNoteModal()});
+document.getElementById("allNotesModal").addEventListener("click",e=>{if(e.target.id==="allNotesModal")closeAllNotes()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!document.getElementById("noteModal").classList.contains("hidden"))closeNoteModal();else if(!document.getElementById("allNotesModal").classList.contains("hidden"))closeAllNotes();else if(!document.getElementById("searchPanel").classList.contains("hidden"))clearSearch()}});
 });
 
-function populateSemesters() {
+function populateSemesters(){const s=document.getElementById("semesterSelect");s.innerHTML="";Object.entries(STUDY_DATA).forEach(([id,sem])=>{const o=document.createElement("option");o.value=id;o.textContent=sem.title;s.appendChild(o)});s.value=currentSemester}
+function semesterChanged(){currentSemester=document.getElementById("semesterSelect").value;const sem=STUDY_DATA[currentSemester];const ss=document.getElementById("subjectSelect");ss.innerHTML="";Object.entries(sem.subjects).forEach(([id,sub])=>{const o=document.createElement("option");o.value=id;o.textContent=sub.title;ss.appendChild(o)});if(!Object.keys(sem.subjects).length){currentSubject=null;document.getElementById("materialsList").innerHTML=`<div class="text-slate-500">Для этого семестра материалы пока не добавлены.</div>`;return}currentSubject=Object.keys(sem.subjects)[0];ss.value=currentSubject;subjectChanged()}
+async function subjectChanged(){currentSubject=document.getElementById("subjectSelect").value;clearReader();await refreshMaterials()}
+function getCurrentSubject(){if(!currentSemester||!currentSubject)return null;return STUDY_DATA[currentSemester]?.subjects?.[currentSubject]||null}
 
-    const select =
-        document.getElementById("semesterSelect");
+async function refreshMaterials(){
+const c=document.getElementById("materialsList"),sub=getCurrentSubject();
+if(!sub){c.innerHTML=`<div class="text-slate-500">Материалы пока не добавлены.</div>`;return}
+c.innerHTML=`<div class="text-slate-500"><span class="spinner"></span> Загрузка списка материалов...</div>`;
+try{const all=[];for(const t of sub.topics){try{const tk=localStorage.getItem("githubToken");const r=await fetch(`${GITHUB_API}/${t.path}`,{headers:tk?githubHeaders(tk):{"Accept":"application/vnd.github+json"}});if(r.status===404)continue;if(!r.ok)throw new Error("Ошибка GitHub API: "+r.status);const f=await r.json();if(!Array.isArray(f))continue;f.filter(f=>f.type==="file").forEach(f=>all.push({...f,topicId:t.id,topicTitle:t.title}))}catch(e){console.warn("Не удалось загрузить тему:",t.title,e)}}
+if(!all.length){c.innerHTML=`<div class="text-slate-500">Материалы пока не загружены.</div>`;return}
+c.innerHTML="";all.sort((a,b)=>{const tc=a.topicId.localeCompare(b.topicId,undefined,{numeric:true});if(tc!==0)return tc;return a.name.localeCompare(b.name,undefined,{numeric:true})});
+all.forEach(file=>{const card=document.createElement("div");card.className="material-card border border-slate-200 rounded-xl p-4";const ext=getExtension(file.name);let icon="📄";if(ext==="pdf")icon="📕";if(ext==="docx")icon="📘";if(ext==="md"||ext==="markdown")icon="📝";if(ext==="html")icon="🌐";
+card.innerHTML=`<div class="text-2xl mb-2">${icon}</div><div class="font-medium break-words">${escapeHtml(file.name)}</div><div class="text-xs text-slate-500 mt-2">${escapeHtml(shortenTopicTitle(file.topicTitle))}</div><div class="text-xs text-slate-400 mt-1 uppercase">${ext}</div><button class="mt-3 w-full bg-blue-600 text-white rounded-lg py-2">Открыть</button>`;
+card.querySelector("button").addEventListener("click",async function(){const b=this;b.textContent="⏳ Открывается…";b.disabled=true;const v=document.getElementById("viewer");v.closest("section").scrollIntoView({behavior:"smooth",block:"start"});await openMaterial(file);b.textContent="✓ Открыто";setTimeout(()=>{b.textContent="Открыть";b.disabled=false},1000)});
+c.appendChild(card)});
+}catch(e){console.error(e);c.innerHTML=`<div class="text-red-600">Не удалось загрузить список материалов.<br><small>${escapeHtml(e.message)}</small></div>`}
+}
+function shortenTopicTitle(t){return t.replace(/^Тема\s+\d+\.\s*/i,"").trim()}
 
-    select.innerHTML = "";
+let currentReaderFile=null,readerSaveTimer=null;
+function readerProgressKey(f){return "readerProgress:"+f.path}
 
-    Object.entries(STUDY_DATA)
-        .forEach(([id, semester]) => {
-
-            const option =
-                document.createElement("option");
-
-            option.value = id;
-            option.textContent = semester.title;
-
-            select.appendChild(option);
-
-        });
-
-    select.value = currentSemester;
+function saveReaderProgress(){
+if(!currentReaderFile)return;
+const ext=getExtension(currentReaderFile.name);
+if(ext!=="html"&&ext!=="md"&&ext!=="markdown")return;
+const viewer=document.getElementById("viewer");if(!viewer)return;
+const data={windowScrollY:window.scrollY,viewerScrollTop:viewer.scrollTop,isFullscreen:!!document.fullscreenElement};
+localStorage.setItem(readerProgressKey(currentReaderFile),JSON.stringify(data));
 }
 
-function semesterChanged() {
+function restoreReaderProgress(file){
+const ext=getExtension(file.name);
+if(ext!=="html"&&ext!=="md"&&ext!=="markdown")return;
+const saved=localStorage.getItem(readerProgressKey(file));
+if(saved===null)return;
+let data;try{data=JSON.parse(saved)}catch(e){data={windowScrollY:Number(saved),viewerScrollTop:0,isFullscreen:false}}
+const viewer=document.getElementById("viewer");if(!viewer)return;
 
-    currentSemester =
-        document.getElementById("semesterSelect").value;
-
-    const semester =
-        STUDY_DATA[currentSemester];
-
-    const subjectSelect =
-        document.getElementById("subjectSelect");
-
-    subjectSelect.innerHTML = "";
-
-    Object.entries(semester.subjects)
-        .forEach(([id, subject]) => {
-
-            const option =
-                document.createElement("option");
-
-            option.value = id;
-            option.textContent = subject.title;
-
-            subjectSelect.appendChild(option);
-
-        });
-
-    if (Object.keys(semester.subjects).length === 0) {
-
-        currentSubject = null;
-
-        document.getElementById("materialsList").innerHTML =
-            `<div class="text-slate-500">
-                Для этого семестра материалы пока не добавлены.
-             </div>`;
-
-        return;
-    }
-
-    currentSubject =
-        Object.keys(semester.subjects)[0];
-
-    subjectSelect.value =
-        currentSubject;
-
-    subjectChanged();
+// Ждём пока браузер отрисует контент после полноэкранного режима
+setTimeout(()=>{
+if(document.fullscreenElement){
+// В полноэкранном режиме скроллим сам viewer
+if(data.viewerScrollTop>0){
+viewer.scrollTop=data.viewerScrollTop;
+}
+}else{
+// В обычном режиме скроллим window
+if(data.windowScrollY>0){
+const section=viewer.closest("section");
+if(section){
+const sectionTop=section.getBoundingClientRect().top+window.scrollY;
+window.scrollTo({top:sectionTop+(Number(data.windowScrollY)||0),behavior:"auto"});
+}
+}
+}
+},500);
 }
 
-async function subjectChanged() {
+// Слушатель скролла для window
+window.addEventListener("scroll",()=>{
+if(!currentReaderFile)return;
+clearTimeout(readerSaveTimer);
+readerSaveTimer=setTimeout(saveReaderProgress,300);
+},{passive:true});
 
-    currentSubject =
-        document.getElementById("subjectSelect").value;
-
-    clearReader();
-
-    await refreshMaterials();
+// Слушатель скролла для viewer в полноэкранном режиме
+document.addEventListener("fullscreenchange",()=>{
+const viewer=document.getElementById("viewer");if(!viewer)return;
+if(document.fullscreenElement){
+viewer.addEventListener("scroll",handleViewerScroll,{passive:true});
+}else{
+viewer.removeEventListener("scroll",handleViewerScroll);
 }
-
-function getCurrentSubject() {
-
-    if (!currentSemester || !currentSubject)
-        return null;
-
-    return STUDY_DATA[currentSemester]
-        ?.subjects?.[currentSubject] || null;
-}
-
-async function refreshMaterials() {
-
-    const container =
-        document.getElementById("materialsList");
-
-    const subject =
-        getCurrentSubject();
-
-    if (!subject) {
-
-        container.innerHTML =
-            `<div class="text-slate-500">
-                Материалы пока не добавлены.
-             </div>`;
-
-        return;
-    }
-
-    container.innerHTML =
-        `<div class="text-slate-500">
-            <span class="spinner"></span>
-            Загрузка списка материалов...
-         </div>`;
-
-    try {
-
-        const allMaterials = [];
-
-        for (const topic of subject.topics) {
-
-            try {
-
-                const token =
-    localStorage.getItem("githubToken");
-
-const response =
-    await fetch(
-        `${GITHUB_API}/${topic.path}`,
-        {
-            headers: token
-                ? githubHeaders(token)
-                : {
-                    "Accept":
-                        "application/vnd.github+json"
-                }
-        }
-    );
-
-                if (response.status === 404)
-                    continue;
-
-                if (!response.ok)
-                    throw new Error(
-                        "Ошибка GitHub API: " +
-                        response.status
-                    );
-
-                const files =
-                    await response.json();
-
-                if (!Array.isArray(files))
-                    continue;
-
-                files
-                    .filter(file => file.type === "file")
-                    .forEach(file => {
-
-                        allMaterials.push({
-
-                            ...file,
-
-                            topicId:
-                                topic.id,
-
-                            topicTitle:
-                                topic.title
-
-                        });
-
-                    });
-
-            } catch (error) {
-
-                console.warn(
-                    "Не удалось загрузить тему:",
-                    topic.title,
-                    error
-                );
-
-            }
-
-        }
-
-        if (!allMaterials.length) {
-
-            container.innerHTML =
-                `<div class="text-slate-500">
-                    Материалы пока не загружены.
-                 </div>`;
-
-            return;
-        }
-
-        container.innerHTML = "";
-
-        allMaterials.sort((a, b) => {
-
-            const topicCompare =
-                a.topicId.localeCompare(
-                    b.topicId,
-                    undefined,
-                    { numeric: true }
-                );
-
-            if (topicCompare !== 0)
-                return topicCompare;
-
-            return a.name.localeCompare(
-                b.name,
-                undefined,
-                { numeric: true }
-            );
-
-        });
-
-        allMaterials.forEach(file => {
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "material-card border border-slate-200 rounded-xl p-4";
-
-            const ext =
-                getExtension(file.name);
-
-            let icon = "📄";
-
-            if (ext === "pdf")
-                icon = "📕";
-
-            if (ext === "docx")
-                icon = "📘";
-
-            if (
-                ext === "md" ||
-                ext === "markdown"
-            )
-                icon = "📝";
-
-            if (ext === "html")
-                icon = "🌐";
-
-            card.innerHTML = `
-
-                <div class="text-2xl mb-2">
-                    ${icon}
-                </div>
-
-                <div class="font-medium break-words">
-                    ${escapeHtml(file.name)}
-                </div>
-
-                <div class="text-xs text-slate-500 mt-2">
-                    ${escapeHtml(
-                        shortenTopicTitle(file.topicTitle)
-                    )}
-                </div>
-
-                <div class="text-xs text-slate-400 mt-1 uppercase">
-                    ${ext}
-                </div>
-
-                <button
-                    class="mt-3 w-full bg-blue-600 text-white rounded-lg py-2">
-                    Открыть
-                </button>
-            `;
-
-            card.querySelector("button")
-    .addEventListener(
-        "click",
-        async function () {
-
-            const button = this;
-
-            button.textContent = "⏳ Открывается…";
-            button.disabled = true;
-
-            const viewer =
-                document.getElementById("viewer");
-
-            const viewerSection =
-                viewer.closest("section");
-
-            viewerSection.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-            await openMaterial(file);
-
-            button.textContent = "✓ Открыто";
-
-            setTimeout(() => {
-
-                button.textContent = "Открыть";
-                button.disabled = false;
-
-            }, 1000);
-
-        }
-    );
-
-            container.appendChild(card);
-
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        container.innerHTML =
-            `<div class="text-red-600">
-                Не удалось загрузить список материалов.
-                <br>
-                <small>
-                    ${escapeHtml(error.message)}
-                </small>
-             </div>`;
-
-    }
-
-}
-
-function shortenTopicTitle(title) {
-
-    return title
-        .replace(/^Тема\s+\d+\.\s*/i, "")
-        .trim();
-
-}
-let currentReaderFile = null;
-let readerSaveTimer = null;
-
-function readerProgressKey(file) {
-    return "readerProgress:" + file.path;
-}
-
-function saveReaderProgress() {
-
-    if (!currentReaderFile)
-        return;
-
-    const ext =
-        getExtension(currentReaderFile.name);
-
-    if (
-        ext !== "html" &&
-        ext !== "md" &&
-        ext !== "markdown"
-    )
-        return;
-
-    const viewer =
-        document.getElementById("viewer");
-
-    if (!viewer)
-        return;
-
-    const data = {
-        windowScrollY: window.scrollY,
-        viewerScrollTop: viewer.scrollTop,
-        isFullscreen: !!document.fullscreenElement
-    };
-
-    localStorage.setItem(
-        readerProgressKey(currentReaderFile),
-        JSON.stringify(data)
-    );
-}
-
-function restoreReaderProgress(file) {
-
-    const ext =
-        getExtension(file.name);
-
-    if (
-        ext !== "html" &&
-        ext !== "md" &&
-        ext !== "markdown"
-    )
-        return;
-
-    const saved =
-        localStorage.getItem(
-            readerProgressKey(file)
-        );
-
-    if (saved === null)
-        return;
-
-    let data;
-    try {
-        data = JSON.parse(saved);
-    } catch (e) {
-        data = { windowScrollY: Number(saved), viewerScrollTop: 0, isFullscreen: false };
-    }
-
-    const viewer =
-        document.getElementById("viewer");
-
-    if (!viewer)
-        return;
-
-    setTimeout(() => {
-
-        if (document.fullscreenElement && data.viewerScrollTop) {
-            viewer.scrollTop = data.viewerScrollTop;
-        } else if (data.windowScrollY) {
-            const section = viewer.closest("section");
-            if (section) {
-                const sectionTop =
-                    section.getBoundingClientRect().top +
-                    window.scrollY;
-                window.scrollTo({
-                    top: sectionTop + (Number(data.windowScrollY) || 0),
-                    behavior: "auto"
-                });
-            }
-        }
-
-    }, 400);
-}
-
-window.addEventListener(
-    "scroll",
-    () => {
-
-        if (!currentReaderFile)
-            return;
-
-        clearTimeout(readerSaveTimer);
-
-        readerSaveTimer =
-            setTimeout(
-                saveReaderProgress,
-                300
-            );
-
-    },
-    { passive: true }
-);
-
-document.addEventListener("fullscreenchange", () => {
-    const viewer = document.getElementById("viewer");
-    if (!viewer) return;
-    
-    if (document.fullscreenElement) {
-        viewer.addEventListener("scroll", viewerScrollHandler, { passive: true });
-    } else {
-        viewer.removeEventListener("scroll", viewerScrollHandler);
-    }
 });
 
-function viewerScrollHandler() {
-    if (!currentReaderFile) return;
-    clearTimeout(readerSaveTimer);
-    readerSaveTimer = setTimeout(saveReaderProgress, 300);
+function handleViewerScroll(){
+if(!currentReaderFile)return;
+clearTimeout(readerSaveTimer);
+readerSaveTimer=setTimeout(saveReaderProgress,300);
 }
 
-async function openMaterial(file) {
-
-    saveReaderProgress();
-
-    currentReaderFile = file;
-
-    const content =
-        document.getElementById("readerContent");
-
-    const ext =
-        getExtension(file.name);
-
-    const rawUrl =
-        `https://raw.githubusercontent.com/` +
-        `${GITHUB_OWNER}/${GITHUB_REPO}/` +
-        `${GITHUB_BRANCH}/${file.path}`;
-
-    await enterFullscreen();
-
-    if (
-        ext === "md" ||
-        ext === "markdown"
-    ) {
-
-        content.innerHTML =
-            `<div class="text-slate-500">
-                <span class="spinner"></span>
-                Загрузка текста...
-             </div>`;
-
-        try {
-
-            const response =
-                await fetch(rawUrl);
-
-            if (!response.ok)
-                throw new Error(
-                    "Не удалось загрузить Markdown"
-                );
-
-            const text =
-                await response.text();
-
-            content.innerHTML =
-                marked.parse(text);
-
-            fixMarkdownImages(
-                content,
-                file.path
-            );
-
-            applyFontSize();
-
-            restoreReaderProgress(file);
-
-        } catch (error) {
-
-            content.innerHTML =
-                `<div class="text-red-600">
-                    Ошибка загрузки Markdown:
-                    ${escapeHtml(error.message)}
-                 </div>`;
-
-        }
-
-        return;
-    }
-
-    if (ext === "html") {
-
-        content.innerHTML =
-            `<div class="text-slate-500">
-                <span class="spinner"></span>
-                Загрузка HTML...
-             </div>`;
-
-        try {
-
-            const response =
-                await fetch(rawUrl);
-
-            if (!response.ok)
-                throw new Error(
-                    "Не удалось загрузить HTML"
-                );
-
-            const html =
-                await response.text();
-
-            const parser =
-                new DOMParser();
-
-            const doc =
-                parser.parseFromString(
-                    html,
-                    "text/html"
-                );
-
-            const body =
-                doc.body;
-
-            content.innerHTML = "";
-
-            Array.from(body.children)
-                .forEach(element => {
-
-                    if (
-                        element.tagName.toLowerCase() === "script"
-                    )
-                        return;
-
-                    content.appendChild(
-                        document.importNode(
-                            element,
-                            true
-                        )
-                    );
-
-                });
-
-            applyFontSize();
-
-            restoreReaderProgress(file);
-
-        } catch (error) {
-
-            content.innerHTML =
-                `<div class="text-red-600">
-                    Ошибка загрузки HTML:
-                    ${escapeHtml(error.message)}
-                 </div>`;
-
-        }
-
-        return;
-    }
-
-    if (ext === "pdf") {
-
-        content.innerHTML = `
-
-            <iframe
-                class="viewer-frame"
-                src="${rawUrl}">
-            </iframe>
-
-            <div class="mt-3 text-center">
-
-                <a
-                    href="${rawUrl}"
-                    target="_blank"
-                    class="text-blue-600 underline">
-
-                    Открыть PDF отдельно
-
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-    if (ext === "docx") {
-
-        const encoded =
-            encodeURIComponent(rawUrl);
-
-        const officeUrl =
-            "https://view.officeapps.live.com/op/embed.aspx?src=" +
-            encoded;
-
-        content.innerHTML = `
-
-            <iframe
-                class="viewer-frame"
-                src="${officeUrl}">
-            </iframe>
-
-            <div class="mt-3 text-center">
-
-                <a
-                    href="${rawUrl}"
-                    target="_blank"
-                    class="text-blue-600 underline">
-
-                    Открыть или скачать DOCX
-
-                </a>
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-    content.innerHTML =
-        `<div class="text-red-600">
-            Этот тип файла пока не поддерживается.
-         </div>`;
-
+async function openMaterial(file){
+saveReaderProgress();currentReaderFile=file;
+const content=document.getElementById("readerContent");
+const ext=getExtension(file.name);
+const rawUrl=`https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${file.path}`;
+
+await enterFullscreen();
+
+if(ext==="md"||ext==="markdown"){
+content.innerHTML=`<div class="text-slate-500"><span class="spinner"></span> Загрузка текста...</div>`;
+try{const r=await fetch(rawUrl);if(!r.ok)throw new Error("Не удалось загрузить Markdown");const t=await r.text();content.innerHTML=marked.parse(t);fixMarkdownImages(content,file.path);applyFontSize();restoreReaderProgress(file)}
+catch(e){content.innerHTML=`<div class="text-red-600">Ошибка загрузки Markdown: ${escapeHtml(e.message)}</div>`}
+return;
+}
+if(ext==="html"){
+content.innerHTML=`<div class="text-slate-500"><span class="spinner"></span> Загрузка HTML...</div>`;
+try{const r=await fetch(rawUrl);if(!r.ok)throw new Error("Не удалось загрузить HTML");const h=await r.text();const p=new DOMParser();const d=p.parseFromString(h,"text/html");content.innerHTML="";Array.from(d.body.children).forEach(el=>{if(el.tagName.toLowerCase()==="script")return;content.appendChild(document.importNode(el,true))});applyFontSize();restoreReaderProgress(file)}
+catch(e){content.innerHTML=`<div class="text-red-600">Ошибка загрузки HTML: ${escapeHtml(e.message)}</div>`}
+return;
+}
+if(ext==="pdf"){content.innerHTML=`<iframe class="viewer-frame" src="${rawUrl}"></iframe><div class="mt-3 text-center"><a href="${rawUrl}" target="_blank" class="text-blue-600 underline">Открыть PDF отдельно</a></div>`;return}
+if(ext==="docx"){const enc=encodeURIComponent(rawUrl);const ou="https://view.officeapps.live.com/op/embed.aspx?src="+enc;content.innerHTML=`<iframe class="viewer-frame" src="${ou}"></iframe><div class="mt-3 text-center"><a href="${rawUrl}" target="_blank" class="text-blue-600 underline">Открыть или скачать DOCX</a></div>`;return}
+content.innerHTML=`<div class="text-red-600">Этот тип файла пока не поддерживается.</div>`;
 }
 
-async function enterFullscreen() {
-    const viewer = document.getElementById("viewer");
-    if (!viewer) return;
-    
-    if (!document.fullscreenElement) {
-        try {
-            await viewer.requestFullscreen();
-            await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (err) {
-            console.warn("Не удалось войти в полноэкранный режим:", err);
-        }
-    }
+async function enterFullscreen(){
+const viewer=document.getElementById("viewer");if(!viewer)return;
+if(!document.fullscreenElement){try{await viewer.requestFullscreen();await new Promise(r=>setTimeout(r,100))}catch(e){console.warn("Не удалось войти в полноэкранный режим:",e)}}
 }
 
-function fixMarkdownImages(
-    container,
-    filePath
-) {
+function fixMarkdownImages(c,fp){const d=fp.substring(0,fp.lastIndexOf("/")+1);c.querySelectorAll("img").forEach(img=>{const s=img.getAttribute("src");if(!s)return;if(s.startsWith("http://")||s.startsWith("https://")||s.startsWith("/"))return;img.src=`https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${d+s}`})}
 
-    const directory =
-        filePath.substring(
-            0,
-            filePath.lastIndexOf("/") + 1
-        );
+function loadFontSize(){const s=Number(localStorage.getItem("readerFontSize"));if(Number.isFinite(s)&&s>=14&&s<=30)currentFontSize=s;applyFontSize()}
+function applyFontSize(){const c=document.getElementById("readerContent");if(!c)return;c.style.fontSize=`${currentFontSize}px`;const l=document.getElementById("fontSizeLabel");if(l){l.textContent=`${Math.round(currentFontSize/18*100)}%`}localStorage.setItem("readerFontSize",currentFontSize)}
+function changeFontSize(d){currentFontSize+=d*2;if(currentFontSize<14)currentFontSize=14;if(currentFontSize>30)currentFontSize=30;applyFontSize()}
+function clearReader(){document.getElementById("readerContent").innerHTML=`<div class="text-slate-500">Выберите материал.</div>`}
 
-    container.querySelectorAll("img")
-        .forEach(img => {
+function openAdmin(){document.getElementById("adminPanel").classList.remove("hidden");checkStoredToken()}
+function closeAdmin(){document.getElementById("adminPanel").classList.add("hidden")}
+function checkStoredToken(){const t=localStorage.getItem("githubToken");if(t){document.getElementById("loginBlock").classList.add("hidden");document.getElementById("adminContent").classList.remove("hidden");populateAdminSubjects();loadAdminFiles()}else{document.getElementById("loginBlock").classList.remove("hidden");document.getElementById("adminContent").classList.add("hidden")}}
 
-            const src =
-                img.getAttribute("src");
+async function loginGitHub(){
+const input=document.getElementById("githubToken"),token=input.value.trim(),status=document.getElementById("loginStatus");
+if(!token){status.innerHTML=`<span class="text-red-600">Введите GitHub-токен.</span>`;return}
+status.innerHTML=`<span class="spinner"></span> Проверяем доступ...`;
+try{const r=await fetch(GITHUB_API,{headers:{"Accept":"application/vnd.github+json","Authorization":`Bearer ${token}`,"X-GitHub-Api-Version":"2022-11-28"}});if(!r.ok)throw new Error("GitHub не принял токен.");
+localStorage.setItem("githubToken",token);status.innerHTML=`<span class="text-green-600">Доступ получен.</span>`;
+document.getElementById("loginBlock").classList.add("hidden");document.getElementById("adminContent").classList.remove("hidden");populateAdminSubjects();loadAdminFiles()}
+catch(e){status.innerHTML=`<span class="text-red-600">${escapeHtml(e.message)}</span>`}
+}
+function logoutGitHub(){localStorage.removeItem("githubToken");document.getElementById("adminContent").classList.add("hidden");document.getElementById("loginBlock").classList.remove("hidden")}
 
-            if (!src)
-                return;
+function populateAdminSubjects(){const s=document.getElementById("adminSubject");s.innerHTML="";Object.entries(STUDY_DATA[currentSemester].subjects).forEach(([id,sub])=>{const o=document.createElement("option");o.value=id;o.textContent=sub.title;s.appendChild(o)});if(currentSubject)s.value=currentSubject;adminSubjectChanged()}
+function adminSubjectChanged(){const sid=document.getElementById("adminSubject").value;const sub=STUDY_DATA[currentSemester].subjects[sid];const s=document.getElementById("adminTopic");s.innerHTML="";if(!sub)return;sub.topics.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.title;s.appendChild(o)});loadAdminFiles()}
 
-            if (
-                src.startsWith("http://") ||
-                src.startsWith("https://") ||
-                src.startsWith("/")
-            ) {
-
-                return;
-
-            }
-
-            const imagePath =
-                directory + src;
-
-            img.src =
-                `https://raw.githubusercontent.com/` +
-                `${GITHUB_OWNER}/${GITHUB_REPO}/` +
-                `${GITHUB_BRANCH}/${imagePath}`;
-
-        });
-
+async function loadAdminFiles(){
+const c=document.getElementById("adminFiles");if(!c)return;
+const tid=document.getElementById("adminTopic")?.value;if(!tid)return;
+const sid=document.getElementById("adminSubject").value;const sub=STUDY_DATA[currentSemester].subjects[sid];if(!sub)return;
+const topic=sub.topics.find(t=>t.id===tid);if(!topic)return;
+c.innerHTML=`<div class="text-slate-500">Загрузка...</div>`;
+try{const tk=localStorage.getItem("githubToken");const r=await fetch(`${GITHUB_API}/${topic.path}`,{headers:githubHeaders(tk)});
+if(r.status===404){c.innerHTML=`<div class="text-slate-500">Файлов пока нет.</div>`;return}
+if(!r.ok)throw new Error("Не удалось получить список файлов.");
+const f=await r.json();c.innerHTML="";
+f.filter(f=>f.type==="file").forEach(file=>{const row=document.createElement("div");row.className="border border-slate-200 rounded-xl p-3 mb-2";
+row.innerHTML=`<div class="flex items-center justify-between gap-3"><div class="min-w-0"><div class="font-medium break-words">${escapeHtml(file.name)}</div><div class="text-xs text-slate-500">${formatBytes(file.size)}</div></div><button class="shrink-0 text-red-600 border border-red-200 px-3 py-2 rounded-lg">Удалить</button></div>`;
+row.querySelector("button").addEventListener("click",()=>deleteMaterial(file));c.appendChild(row)});
+}catch(e){c.innerHTML=`<div class="text-red-600">${escapeHtml(e.message)}</div>`}
 }
 
-function loadFontSize() {
-
-    const saved =
-        Number(
-            localStorage.getItem(
-                "readerFontSize"
-            )
-        );
-
-    if (
-        Number.isFinite(saved) &&
-        saved >= 14 &&
-        saved <= 30
-    ) {
-
-        currentFontSize = saved;
-
-    }
-
-    applyFontSize();
-
+async function uploadMaterial(){
+const status=document.getElementById("uploadStatus");const title=document.getElementById("uploadTitle").value.trim();
+const fileInput=document.getElementById("uploadFile");const file=fileInput.files[0];
+const sid=document.getElementById("adminSubject").value,tid=document.getElementById("adminTopic").value;
+if(!file){status.innerHTML=`<span class="text-red-600">Выберите файл.</span>`;return}
+if(file.size>90*1024*1024){status.innerHTML=`<span class="text-red-600">Файл слишком большой.</span>`;return}
+const allowed=["md","markdown","pdf","docx","html"];const ext=getExtension(file.name);
+if(!allowed.includes(ext)){status.innerHTML=`<span class="text-red-600">Разрешены только HTML, MD, PDF и DOCX.</span>`;return}
+const topic=STUDY_DATA[currentSemester].subjects[sid].topics.find(t=>t.id===tid);
+if(!topic){status.innerHTML=`<span class="text-red-600">Не удалось определить тему.</span>`;return}
+status.innerHTML=`<span class="spinner"></span> Подготовка файла...`;
+try{const tk=localStorage.getItem("githubToken");if(!tk)throw new Error("Сначала войдите в GitHub.");
+let fn=title?sanitizeFilename(title)+"."+ext:sanitizeFilename(file.name);
+const b64=await fileToBase64(file);const path=`${topic.path}/${fn}`;let existingSha=null;
+const check=await fetch(`${GITHUB_API}/${path}`,{headers:githubHeaders(tk)});
+if(check.ok){const ex=await check.json();existingSha=ex.sha}
+status.innerHTML=`<span class="spinner"></span> Загружаем файл в GitHub...`;
+const body={message:`${existingSha?"Обновление":"Добавление"} материала: ${fn}`,content:b64,branch:GITHUB_BRANCH};
+if(existingSha)body.sha=existingSha;
+const r=await fetch(`${GITHUB_API}/${path}`,{method:"PUT",headers:githubHeaders(tk),body:JSON.stringify(body)});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||"GitHub не принял файл.")}
+status.innerHTML=`<span class="text-green-600">✓ Материал успешно загружен.</span>`;
+document.getElementById("uploadTitle").value="";fileInput.value="";
+await loadAdminFiles();await refreshMaterials();
+}catch(e){console.error(e);status.innerHTML=`<span class="text-red-600">Ошибка: ${escapeHtml(e.message)}</span>`}
 }
 
-function applyFontSize() {
-
-    const content =
-        document.getElementById(
-            "readerContent"
-        );
-
-    if (!content)
-        return;
-
-    content.style.fontSize =
-        `${currentFontSize}px`;
-
-    const label =
-        document.getElementById(
-            "fontSizeLabel"
-        );
-
-    if (label) {
-
-        const percent =
-            Math.round(
-                currentFontSize / 18 * 100
-            );
-
-        label.textContent =
-            `${percent}%`;
-
-    }
-
-    localStorage.setItem(
-        "readerFontSize",
-        currentFontSize
-    );
-
+async function deleteMaterial(file){
+if(!confirm(`Удалить файл "${file.name}"?`))return;
+try{const tk=localStorage.getItem("githubToken");if(!tk)throw new Error("Нет доступа к GitHub.");
+const r=await fetch(`${GITHUB_API}/${file.path}`,{method:"DELETE",headers:githubHeaders(tk),body:JSON.stringify({message:`Удаление материала: ${file.name}`,sha:file.sha,branch:GITHUB_BRANCH})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||"Не удалось удалить файл.")}
+await loadAdminFiles();await refreshMaterials();
+}catch(e){alert("Ошибка удаления: "+e.message)}
 }
 
-function changeFontSize(direction) {
-
-    const step = 2;
-
-    currentFontSize +=
-        direction * step;
-
-    if (currentFontSize < 14)
-        currentFontSize = 14;
-
-    if (currentFontSize > 30)
-        currentFontSize = 30;
-
-    applyFontSize();
-
-}
-
-function clearReader() {
-
-    document.getElementById(
-        "readerContent"
-    ).innerHTML = `
-
-        <div class="text-slate-500">
-            Выберите материал.
-        </div>
-
-    `;
-
-}
-
-function openAdmin() {
-
-    document
-        .getElementById("adminPanel")
-        .classList.remove("hidden");
-
-    checkStoredToken();
-
-}
-
-function closeAdmin() {
-
-    document
-        .getElementById("adminPanel")
-        .classList.add("hidden");
-
-}
-
-function checkStoredToken() {
-
-    const token =
-        localStorage.getItem(
-            "githubToken"
-        );
-
-    if (token) {
-
-        document
-            .getElementById("loginBlock")
-            .classList.add("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.remove("hidden");
-
-        populateAdminSubjects();
-
-        loadAdminFiles();
-
-    } else {
-
-        document
-            .getElementById("loginBlock")
-            .classList.remove("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.add("hidden");
-
-    }
-
-}
-
-async function loginGitHub() {
-
-    const input =
-        document.getElementById(
-            "githubToken"
-        );
-
-    const token =
-        input.value.trim();
-
-    const status =
-        document.getElementById(
-            "loginStatus"
-        );
-
-    if (!token) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Введите GitHub-токен.
-             </span>`;
-
-        return;
-
-    }
-
-    status.innerHTML =
-        `<span class="spinner"></span>
-         Проверяем доступ...`;
-
-    try {
-
-        const response =
-            await fetch(
-                `${GITHUB_API}`,
-                {
-                    headers: {
-
-                        "Accept":
-                            "application/vnd.github+json",
-
-                        "Authorization":
-                            `Bearer ${token}`,
-
-                        "X-GitHub-Api-Version":
-                            "2022-11-28"
-
-                    }
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "GitHub не принял токен."
-            );
-
-        }
-
-        localStorage.setItem(
-            "githubToken",
-            token
-        );
-
-        status.innerHTML =
-            `<span class="text-green-600">
-                Доступ получен.
-             </span>`;
-
-        document
-            .getElementById("loginBlock")
-            .classList.add("hidden");
-
-        document
-            .getElementById("adminContent")
-            .classList.remove("hidden");
-
-        populateAdminSubjects();
-
-        loadAdminFiles();
-
-    } catch (error) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                ${escapeHtml(error.message)}
-             </span>`;
-
-    }
-
-}
-
-function logoutGitHub() {
-
-    localStorage.removeItem(
-        "githubToken"
-    );
-
-    document
-        .getElementById("adminContent")
-        .classList.add("hidden");
-
-    document
-        .getElementById("loginBlock")
-        .classList.remove("hidden");
-
-}
-
-function populateAdminSubjects() {
-
-    const select =
-        document.getElementById(
-            "adminSubject"
-        );
-
-    select.innerHTML = "";
-
-    const semester =
-        STUDY_DATA[currentSemester];
-
-    Object.entries(semester.subjects)
-        .forEach(([id, subject]) => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value = id;
-
-            option.textContent =
-                subject.title;
-
-            select.appendChild(option);
-
-        });
-
-    if (currentSubject)
-        select.value = currentSubject;
-
-    adminSubjectChanged();
-
-}
-
-function adminSubjectChanged() {
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const subject =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId];
-
-    const select =
-        document.getElementById(
-            "adminTopic"
-        );
-
-    select.innerHTML = "";
-
-    if (!subject)
-        return;
-
-    subject.topics.forEach(topic => {
-
-        const option =
-            document.createElement(
-                "option"
-            );
-
-        option.value =
-            topic.id;
-
-        option.textContent =
-            topic.title;
-
-        select.appendChild(option);
-
-    });
-
-    loadAdminFiles();
-
-}
-
-async function loadAdminFiles() {
-
-    const container =
-        document.getElementById(
-            "adminFiles"
-        );
-
-    if (!container)
-        return;
-
-    const topicId =
-        document.getElementById(
-            "adminTopic"
-        )?.value;
-
-    if (!topicId)
-        return;
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const subject =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId];
-
-    if (!subject)
-        return;
-
-    const topic =
-        subject.topics.find(
-            t => t.id === topicId
-        );
-
-    if (!topic)
-        return;
-
-    container.innerHTML =
-        `<div class="text-slate-500">
-            Загрузка...
-         </div>`;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${topic.path}`,
-                {
-                    headers:
-                        githubHeaders(token)
-                }
-            );
-
-        if (response.status === 404) {
-
-            container.innerHTML =
-                `<div class="text-slate-500">
-                    Файлов пока нет.
-                 </div>`;
-
-            return;
-
-        }
-
-        if (!response.ok)
-            throw new Error(
-                "Не удалось получить список файлов."
-            );
-
-        const files =
-            await response.json();
-
-        container.innerHTML = "";
-
-        files
-            .filter(
-                file => file.type === "file"
-            )
-            .forEach(file => {
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-                row.className =
-                    "border border-slate-200 rounded-xl p-3 mb-2";
-
-                row.innerHTML = `
-
-                    <div class="flex items-center justify-between gap-3">
-
-                        <div class="min-w-0">
-
-                            <div class="font-medium break-words">
-                                ${escapeHtml(file.name)}
-                            </div>
-
-                            <div class="text-xs text-slate-500">
-                                ${formatBytes(file.size)}
-                            </div>
-
-                        </div>
-
-                        <button
-                            class="shrink-0 text-red-600 border border-red-200 px-3 py-2 rounded-lg">
-                            Удалить
-                        </button>
-
-                    </div>
-
-                `;
-
-                row.querySelector("button")
-                    .addEventListener(
-                        "click",
-                        () => deleteMaterial(file)
-                    );
-
-                container.appendChild(row);
-
-            });
-
-    } catch (error) {
-
-        container.innerHTML =
-            `<div class="text-red-600">
-                ${escapeHtml(error.message)}
-             </div>`;
-
-    }
-
-}
-
-async function uploadMaterial() {
-
-    const status =
-        document.getElementById(
-            "uploadStatus"
-        );
-
-    const title =
-        document.getElementById(
-            "uploadTitle"
-        )
-        .value
-        .trim();
-
-    const fileInput =
-        document.getElementById(
-            "uploadFile"
-        );
-
-    const file =
-        fileInput.files[0];
-
-    const subjectId =
-        document.getElementById(
-            "adminSubject"
-        ).value;
-
-    const topicId =
-        document.getElementById(
-            "adminTopic"
-        ).value;
-
-    if (!file) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Выберите файл.
-             </span>`;
-
-        return;
-
-    }
-
-    if (file.size > 90 * 1024 * 1024) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Файл слишком большой. Максимум около 90 МБ.
-             </span>`;
-
-        return;
-
-    }
-
-    const allowed =
-        [
-            "md",
-            "markdown",
-            "pdf",
-            "docx",
-            "html"
-        ];
-
-    const extension =
-        getExtension(file.name);
-
-    if (!allowed.includes(extension)) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Разрешены только HTML, MD, PDF и DOCX.
-             </span>`;
-
-        return;
-
-    }
-
-    const topic =
-        STUDY_DATA[currentSemester]
-            .subjects[subjectId]
-            .topics
-            .find(
-                t => t.id === topicId
-            );
-
-    if (!topic) {
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Не удалось определить тему.
-             </span>`;
-
-        return;
-
-    }
-
-    status.innerHTML =
-        `<span class="spinner"></span>
-         Подготовка файла...`;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        if (!token)
-            throw new Error(
-                "Сначала войдите в GitHub."
-            );
-
-        let filename =
-            title
-                ? sanitizeFilename(title) +
-                  "." +
-                  extension
-                : sanitizeFilename(
-                    file.name
-                );
-
-        const base64 =
-            await fileToBase64(file);
-
-        const path =
-            `${topic.path}/${filename}`;
-
-        let existingSha = null;
-
-        const check =
-            await fetch(
-                `${GITHUB_API}/${path}`,
-                {
-                    headers:
-                        githubHeaders(token)
-                }
-            );
-
-        if (check.ok) {
-
-            const existing =
-                await check.json();
-
-            existingSha =
-                existing.sha;
-
-        }
-
-        status.innerHTML =
-            `<span class="spinner"></span>
-             Загружаем файл в GitHub...`;
-
-        const body = {
-
-            message:
-                `${existingSha ? "Обновление" : "Добавление"} материала: ${filename}`,
-
-            content:
-                base64,
-
-            branch:
-                GITHUB_BRANCH
-
-        };
-
-        if (existingSha)
-            body.sha =
-                existingSha;
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${path}`,
-                {
-                    method: "PUT",
-
-                    headers:
-                        githubHeaders(token),
-
-                    body:
-                        JSON.stringify(body)
-                }
-            );
-
-        if (!response.ok) {
-
-            const error =
-                await response
-                    .json()
-                    .catch(
-                        () => ({})
-                    );
-
-            throw new Error(
-                error.message ||
-                "GitHub не принял файл."
-            );
-
-        }
-
-        status.innerHTML =
-            `<span class="text-green-600">
-                ✓ Материал успешно загружен.
-             </span>`;
-
-        document
-            .getElementById(
-                "uploadTitle"
-            )
-            .value = "";
-
-        fileInput.value = "";
-
-        await loadAdminFiles();
-
-        await refreshMaterials();
-
-    } catch (error) {
-
-        console.error(error);
-
-        status.innerHTML =
-            `<span class="text-red-600">
-                Ошибка:
-                ${escapeHtml(error.message)}
-             </span>`;
-
-    }
-
-}
-
-async function deleteMaterial(file) {
-
-    const confirmed =
-        confirm(
-            `Удалить файл "${file.name}"?`
-        );
-
-    if (!confirmed)
-        return;
-
-    try {
-
-        const token =
-            localStorage.getItem(
-                "githubToken"
-            );
-
-        if (!token)
-            throw new Error(
-                "Нет доступа к GitHub."
-            );
-
-        const response =
-            await fetch(
-                `${GITHUB_API}/${file.path}`,
-                {
-                    method: "DELETE",
-
-                    headers:
-                        githubHeaders(token),
-
-                    body:
-                        JSON.stringify({
-
-                            message:
-                                `Удаление материала: ${file.name}`,
-
-                            sha:
-                                file.sha,
-
-                            branch:
-                                GITHUB_BRANCH
-
-                        })
-                }
-            );
-
-        if (!response.ok) {
-
-            const error =
-                await response
-                    .json()
-                    .catch(
-                        () => ({})
-                    );
-
-            throw new Error(
-                error.message ||
-                "Не удалось удалить файл."
-            );
-
-        }
-
-        await loadAdminFiles();
-
-        await refreshMaterials();
-
-    } catch (error) {
-
-        alert(
-            "Ошибка удаления: " +
-            error.message
-        );
-
-    }
-
-}
-
-function githubHeaders(token) {
-
-    return {
-
-        "Accept":
-            "application/vnd.github+json",
-
-        "Authorization":
-            `Bearer ${token}`,
-
-        "X-GitHub-Api-Version":
-            "2022-11-28",
-
-        "Content-Type":
-            "application/json"
-
-    };
-
-}
-
-function fileToBase64(file) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            const reader =
-                new FileReader();
-
-            reader.onload = () => {
-
-                const result =
-                    reader.result;
-
-                const base64 =
-                    result
-                        .split(",")[1];
-
-                resolve(base64);
-
-            };
-
-            reader.onerror =
-                reject;
-
-            reader.readAsDataURL(file);
-
-        }
-    );
-
-}
-
-function getExtension(filename) {
-
-    return filename
-        .split(".")
-        .pop()
-        .toLowerCase();
-
-}
-
-function sanitizeFilename(name) {
-
-    return name
-
-        .replace(
-            /[\\/:*?"<>|#%{}]/g,
-            "_"
-        )
-
-        .replace(
-            /\s+/g,
-            "_"
-        )
-
-        .substring(
-            0,
-            150
-        );
-
-}
-
-function formatBytes(bytes) {
-
-    if (!bytes)
-        return "0 Б";
-
-    const units =
-        [
-            "Б",
-            "КБ",
-            "МБ",
-            "ГБ"
-        ];
-
-    let i = 0;
-
-    let value =
-        bytes;
-
-    while (
-        value >= 1024 &&
-        i < units.length - 1
-    ) {
-
-        value /= 1024;
-
-        i++;
-
-    }
-
-    return value.toFixed(
-        value >= 10 || i === 0
-            ? 0
-            : 1
-    ) +
-    " " +
-    units[i];
-
-}
-
-function escapeHtml(text) {
-
-    return String(text)
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
-
-function toggleTheme() {
-
-    const isDark =
-        document.documentElement
-            .classList
-            .toggle("dark");
-
-    localStorage.setItem(
-        "darkMode",
-        isDark ? "1" : "0"
-    );
-
-    document
-        .getElementById(
-            "themeButton"
-        )
-        .textContent =
-        isDark
-            ? "☀️"
-            : "🌙";
-
-}
-
-function loadTheme() {
-
-    const dark =
-        localStorage.getItem(
-            "darkMode"
-        );
-
-    if (dark === "1") {
-
-        document.documentElement
-            .classList
-            .add("dark");
-
-        document
-            .getElementById(
-                "themeButton"
-            )
-            .textContent =
-            "☀️";
-
-    }
-
-}
-
-async function toggleFullscreen() {
-
-    const viewer =
-        document.getElementById(
-            "viewer"
-        );
-
-    try {
-
-        if (!document.fullscreenElement) {
-
-            await viewer.requestFullscreen();
-
-        } else {
-
-            await document.exitFullscreen();
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Ошибка полноэкранного режима:",
-            error
-        );
-
-    }
-
-}
-
-document.addEventListener(
-    "fullscreenchange",
-    () => {
-
-        const button =
-            document.getElementById(
-                "fullscreenButton"
-            );
-
-        if (!button)
-            return;
-
-        if (document.fullscreenElement) {
-
-            button.textContent =
-                "⛶ Выйти из полноэкранного режима";
-
-        } else {
-
-            button.textContent =
-                "⛶ На весь экран";
-
-        }
-
-    }
-);
-
+function githubHeaders(t){return{"Accept":"application/vnd.github+json","Authorization":`Bearer ${t}`,"X-GitHub-Api-Version":"2022-11-28","Content-Type":"application/json"}}
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(f)})}
+function getExtension(f){return f.split(".").pop().toLowerCase()}
+function sanitizeFilename(n){return n.replace(/[\\/:*?"<>|#%{}]/g,"_").replace(/\s+/g,"_").substring(0,150)}
+function formatBytes(b){if(!b)return"0 Б";const u=["Б","КБ","МБ","ГБ"];let i=0,v=b;while(v>=1024&&i<u.length-1){v/=1024;i++}return v.toFixed(v>=10||i===0?0:1)+" "+u[i]}
+function escapeHtml(t){return String(t).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+
+function toggleTheme(){const d=document.documentElement.classList.toggle("dark");localStorage.setItem("darkMode",d?"1":"0");document.getElementById("themeButton").textContent=d?"☀️":"🌙"}
+function loadTheme(){if(localStorage.getItem("darkMode")==="1"){document.documentElement.classList.add("dark");document.getElementById("themeButton").textContent="☀️"}}
+
+async function toggleFullscreen(){const v=document.getElementById("viewer");try{if(!document.fullscreenElement)await v.requestFullscreen();else await document.exitFullscreen()}catch(e){console.error("Ошибка полноэкранного режима:",e)}}
+document.addEventListener("fullscreenchange",()=>{const b=document.getElementById("fullscreenButton");if(!b)return;b.textContent=document.fullscreenElement?"⛶ Выйти из полноэкранного режима":"⛶ На весь экран"});
 </script>
-
 </body>
 </html>
